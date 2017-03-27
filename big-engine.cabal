@@ -1,0 +1,46 @@
+name:                big-engine
+version:             0.1.0.0
+-- synopsis:
+-- description:
+homepage:            https://github.com/psandahl/big-engine#readme
+license:             MIT
+license-file:        LICENSE
+author:              Patrik Sandahl
+maintainer:          patrik.sandahl@gmail.com
+copyright:           2017 Patrik Sandahl
+category:            Graphics
+build-type:          Simple
+extra-source-files:  README.md
+cabal-version:       >=1.10
+
+test-suite big-engine-test
+  type:                exitcode-stdio-1.0
+  hs-source-dirs:      test
+  main-is:             Spec.hs
+  --other-modules:
+  build-depends:       base >= 4.7 && < 5
+                     , big-engine
+                     , HUnit
+                     , test-framework
+                     , test-framework-hunit
+                     , test-framework-quickcheck2
+                     , QuickCheck
+  default-language:    Haskell2010
+  ghc-options:         -Wall -Werror
+
+library
+  hs-source-dirs:      src
+  exposed-modules:     Lib
+  build-depends:       base >= 4.7 && < 5
+                     , bytestring
+                     , GLFW-b
+                     , linear
+                     , OpenGLRaw
+                     , stm
+                     , vector
+  default-language:    Haskell2010
+  ghc-options:         -Wall -Werror
+
+source-repository head
+  type:     git
+  location: https://github.com/psandahl/big-engine
