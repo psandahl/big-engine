@@ -14,15 +14,16 @@ module Graphics.BigEngine.Render
     , liftIO
     ) where
 
-import           Control.Concurrent.STM (TVar)
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.State    (MonadState, StateT, runStateT)
 import           Graphics.UI.GLFW       (Window)
 
 -- | BigEngine's internal render state.
 data RenderState app = RenderState
-    { window   :: !Window
-    , appState :: !(TVar app)
+    { window    :: !Window
+    , dimension :: !(Int, Int)
+    , duration  :: !Double
+    , appState  :: !app
     }
 
 newtype Render app reply =
