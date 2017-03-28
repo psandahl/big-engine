@@ -11,9 +11,9 @@ module Graphics.BigEngine.Display
     , renderLoop
     ) where
 
-import           Control.Monad                    (unless, when)
+import           Control.Monad                    (unless, void, when)
 import           Control.Monad.Except             (runExceptT, throwError)
-import           Data.IORef                       (IORef, readIORef, writeIORef)
+import           Data.IORef                       (IORef, modifyIORef)
 import           Data.Maybe                       (isJust, isNothing)
 import           Graphics.BigEngine.Configuration
 import           Graphics.BigEngine.Render        (Render, RenderState (..),
@@ -89,26 +89,22 @@ renderLoop ref action = go
             -- Poll events and execute all callbacks.
             GLFW.pollEvents
 
-            -- Read out the 'RenderState'.
-            state <- readIORef ref
-
             -- Read the new timestamp (ms offset to start of GLFW).
             now <- GLFW.getTime
             when (isJust now) $ do
                 let Just now' = now
 
-                -- Render the frame. The state might have been changed by
-                -- the application.
-                ((), newState) <- runRender action $
-                                    state { duration = now' - lastTime state
-                                          , lastTime = now'
-                                          }
+                -- Update the time values.
+                modifyIORef ref $ \state ->
+                    state { duration = now' - lastTime state
+                          , lastTime = now'
+                      }
+
+                -- Render the frame.
+                void $ runRender action ref
 
                 -- Swap off-screen and screen buffers.
                 GLFW.swapBuffers (window newState)
-
-                -- Save the new state for the next iteration.
-                writeIORef ref newState
 
                 -- Check if a window close is requested. Otherwise continue one
                 -- more iteration.
