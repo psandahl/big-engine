@@ -77,6 +77,7 @@ initDisplay config app = runExceptT $ do
         , dimension = (width, height)
         , lastTime = 0
         , duration = 0
+        , appWindowSizeCallback = Nothing
         , appState = app
         }
 

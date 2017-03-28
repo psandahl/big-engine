@@ -10,12 +10,14 @@
 module Graphics.BigEngine.Render
     ( Render
     , RenderState (..)
+    , WindowSizeCallback
     , runRender
     , frameDuration
     , displayDimension
     , getAppState
     , putAppState
     , modifyAppState
+    , setWindowSizeCallback
     , liftIO
     ) where
 
@@ -24,13 +26,27 @@ import           Control.Monad.Reader   (MonadReader, ReaderT, ask, runReaderT)
 import           Data.IORef             (IORef, modifyIORef, readIORef)
 import           Graphics.UI.GLFW       (Window)
 
+type WindowSizeCallback app = Int -> Int -> Render app ()
+
 -- | BigEngine's internal render state.
 data RenderState app = RenderState
-    { window    :: !Window
-    , dimension :: !(Int, Int)
-    , lastTime  :: !Double
-    , duration  :: !Double
-    , appState  :: !app
+    { window                :: !Window
+      -- ^ The GLFW window.
+
+    , dimension             :: !(Int, Int)
+      -- ^ The current dimensions for the window (width, height).
+
+    , lastTime              :: !Double
+      -- ^ Last taken timestamp value.
+
+    , duration              :: !Double
+      -- ^ The duration in (fractional) seconds since previous frame.
+
+    , appWindowSizeCallback :: !(Maybe (WindowSizeCallback app))
+      -- ^ The application's window size change callback.
+
+    , appState              :: !app
+      -- ^ The user provided application state.
     }
 
 --  | The Render monad transform. Just 'StateT' on top of IO.
@@ -65,6 +81,12 @@ modifyAppState :: (app -> app) -> Render app ()
 modifyAppState g = do
     ref <- ask
     modifyIORef' ref $ \state -> state { appState = g (appState state) }
+
+-- | Set (or unset) the 'WindowSizeCallback'.
+setWindowSizeCallback :: Maybe (WindowSizeCallback app) -> Render app ()
+setWindowSizeCallback val = do
+    ref <- ask
+    modifyIORef' ref $ \state -> state { appWindowSizeCallback = val }
 
 readIORef' :: IORef (RenderState app) -> Render app (RenderState app)
 readIORef' = liftIO . readIORef

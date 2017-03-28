@@ -12,12 +12,14 @@ module Graphics.BigEngine
     ( Configuration (..)
     , DisplayMode (..)
     , Render
+    , WindowSizeCallback
     , runEngine
     , frameDuration
     , displayDimension
     , getAppState
     , putAppState
     , modifyAppState
+    , setWindowSizeCallback
     ) where
 
 import           Control.Monad                    (void)
@@ -27,10 +29,12 @@ import           Graphics.BigEngine.Configuration (Configuration (..),
                                                    DisplayMode (..))
 import           Graphics.BigEngine.Display       (initDisplay, renderLoop)
 import           Graphics.BigEngine.Render        (Render, RenderState (..),
+                                                   WindowSizeCallback,
                                                    displayDimension,
                                                    frameDuration, getAppState,
                                                    modifyAppState, putAppState,
-                                                   runRender)
+                                                   runRender,
+                                                   setWindowSizeCallback)
 
 -- | Run the engine. Provided are the 'Configuration' and the application's
 -- empty state. The state will then be carried through all stages (preamble,
