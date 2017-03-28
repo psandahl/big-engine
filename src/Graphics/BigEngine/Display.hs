@@ -13,14 +13,15 @@ module Graphics.BigEngine.Display
 
 import           Control.Monad                    (unless, void, when)
 import           Control.Monad.Except             (runExceptT, throwError)
-import           Data.IORef                       (IORef, modifyIORef)
+import           Data.IORef                       (IORef, modifyIORef,
+                                                   readIORef)
 import           Data.Maybe                       (isJust, isNothing)
 import           Graphics.BigEngine.Configuration
 import           Graphics.BigEngine.Render        (Render, RenderState (..),
                                                    liftIO, runRender)
 import qualified Graphics.GL                      as GL
 import           Graphics.UI.GLFW                 (OpenGLProfile (..),
-                                                   VideoMode (..),
+                                                   VideoMode (..), Window,
                                                    WindowHint (..))
 import qualified Graphics.UI.GLFW                 as GLFW
 
@@ -82,14 +83,11 @@ initDisplay config app = runExceptT $ do
 -- | The render loop. Run frame by frame until a close of the display is
 -- requested.
 renderLoop :: IORef (RenderState app) -> Render app () -> IO ()
-renderLoop ref action = go
+renderLoop ref action = go =<< (window <$> readIORef ref)
     where
-        go :: IO ()
-        go = do
-            -- Poll events and execute all callbacks.
-            GLFW.pollEvents
-
-            -- Read the new timestamp (ms offset to start of GLFW).
+        go :: Window -> IO ()
+        go win = do
+            -- Read the new timestamp (second offset to start of GLFW).
             now <- GLFW.getTime
             when (isJust now) $ do
                 let Just now' = now
@@ -104,9 +102,12 @@ renderLoop ref action = go
                 void $ runRender action ref
 
                 -- Swap off-screen and screen buffers.
-                GLFW.swapBuffers (window newState)
+                GLFW.swapBuffers win
+
+                -- Poll events and execute all callbacks.
+                GLFW.pollEvents
 
                 -- Check if a window close is requested. Otherwise continue one
                 -- more iteration.
-                shallClose <- GLFW.windowShouldClose (window newState)
-                unless shallClose go
+                shallClose <- GLFW.windowShouldClose win
+                unless shallClose $ go win

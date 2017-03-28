@@ -20,7 +20,7 @@ module Graphics.BigEngine.Render
     ) where
 
 import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Control.Monad.State    (MonadState, StateT, evalStateT, get)
+import           Control.Monad.Reader   (MonadReader, ReaderT, ask, runReaderT)
 import           Data.IORef             (IORef, modifyIORef, readIORef)
 import           Graphics.UI.GLFW       (Window)
 
@@ -35,35 +35,35 @@ data RenderState app = RenderState
 
 --  | The Render monad transform. Just 'StateT' on top of IO.
 newtype Render app reply =
-    Render { extractRender :: StateT (IORef (RenderState app)) IO reply }
-    deriving (Functor, Applicative, Monad, MonadState (IORef (RenderState app)), MonadIO)
+    Render { extractRender :: ReaderT (IORef (RenderState app)) IO reply }
+    deriving (Functor, Applicative, Monad, MonadReader (IORef (RenderState app)), MonadIO)
 
 -- | Run the Render monad action.
 runRender :: Render app reply -> IORef (RenderState app) -> IO reply
-runRender action = evalStateT (extractRender action)
+runRender action = runReaderT (extractRender action)
 
 -- | The time in (fractional) seconds since last frame.
 frameDuration :: Render app Double
-frameDuration = duration <$> (readIORef' =<< get)
+frameDuration = duration <$> (readIORef' =<< ask)
 
 -- | The display dimension as (width, height).
 displayDimension :: Render app (Int, Int)
-displayDimension = dimension <$> (readIORef' =<< get)
+displayDimension = dimension <$> (readIORef' =<< ask)
 
 -- | Read the app state.
 getAppState :: Render app app
-getAppState = appState <$> (readIORef' =<< get)
+getAppState = appState <$> (readIORef' =<< ask)
 
 -- | Put a new app state.
 putAppState :: app -> Render app ()
 putAppState app = do
-    ref <- get
+    ref <- ask
     modifyIORef' ref $ \state -> state { appState = app }
 
 -- | Modify the app state.
 modifyAppState :: (app -> app) -> Render app ()
 modifyAppState g = do
-    ref <- get
+    ref <- ask
     modifyIORef' ref $ \state -> state { appState = g (appState state) }
 
 readIORef' :: IORef (RenderState app) -> Render app (RenderState app)

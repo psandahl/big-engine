@@ -21,7 +21,7 @@ module Graphics.BigEngine
     ) where
 
 import           Control.Monad                    (void)
-import           Data.IORef                       (newIORef, readIORef)
+import           Data.IORef                       (modifyIORef, newIORef)
 import           Graphics.BigEngine.Callback      (initCallbacks)
 import           Graphics.BigEngine.Configuration (Configuration (..),
                                                    DisplayMode (..))
@@ -45,16 +45,18 @@ runEngine config app = do
     case eState of
         Right state -> do
 
+            -- Make a mutable reference of the state.
+            ref <- newIORef state
+
             -- Application level initialization - preamble.
-            (initResult, newState) <- runRender (preamble config) state
+            initResult <- runRender (preamble config) ref
             case initResult of
                 Right () -> do
 
-                    -- Make a mutable reference for the state. Needed for
-                    -- the callbacks. Reset the timing values in the state
-                    ref <- newIORef $ newState { lastTime = 0
-                                               , duration = 0
-                                               }
+                    -- Reset the timing values in the state.
+                    modifyIORef ref $ \s -> s { lastTime = 0
+                                              , duration = 0
+                                              }
 
                     -- Initialize callbacks.
                     initCallbacks ref
@@ -62,9 +64,8 @@ runEngine config app = do
                     -- Run the render loop until request to stop.
                     renderLoop ref (frame config)
 
-                    -- Fetch the last state and run the postamble.
-                    lastState <- readIORef ref
-                    void $ runRender (postamble config) lastState
+                    -- Final stage. Run the postamble.
+                    void $ runRender (postamble config) ref
 
                     return $ Right ()
 
