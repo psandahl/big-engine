@@ -74,6 +74,7 @@ initDisplay config app = runExceptT $ do
     return RenderState
         { window = win
         , dimension = (width, height)
+        , lastTime = 0
         , duration = 0
         , appState = app
         }
@@ -99,7 +100,9 @@ renderLoop ref action = go
                 -- Render the frame. The state might have been changed by
                 -- the application.
                 ((), newState) <- runRender action $
-                                    state { duration = now' - duration state }
+                                    state { duration = now' - lastTime state
+                                          , lastTime = now'
+                                          }
 
                 -- Swap off-screen and screen buffers.
                 GLFW.swapBuffers (window newState)
