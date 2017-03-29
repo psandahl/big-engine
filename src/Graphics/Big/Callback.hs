@@ -1,20 +1,20 @@
 -- |
--- Module: Graphics.BigEngine.Callback
+-- Module: Graphics.Big.Callback
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.BigEngine.Callback
+module Graphics.Big.Callback
     ( initCallbacks
     ) where
 
-import           Data.IORef                (IORef, modifyIORef, readIORef)
-import           Graphics.BigEngine.Render (RenderState (..), runRender)
-import qualified Graphics.GL               as GL
-import           Graphics.UI.GLFW          (Window)
-import qualified Graphics.UI.GLFW          as GLFW
+import           Data.IORef          (IORef, modifyIORef, readIORef)
+import           Graphics.Big.Render (RenderState (..), runRender)
+import qualified Graphics.GL         as GL
+import           Graphics.UI.GLFW    (Window)
+import qualified Graphics.UI.GLFW    as GLFW
 
 -- | Init GLFW callbacks.
 initCallbacks :: IORef (RenderState app) -> IO ()

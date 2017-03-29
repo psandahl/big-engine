@@ -1,29 +1,27 @@
 -- |
--- Module: Graphics.BigEngine.Display
+-- Module: Graphics.Big.Display
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.BigEngine.Display
+module Graphics.Big.Display
     ( initDisplay
     , renderLoop
     ) where
 
-import           Control.Monad                    (unless, void, when)
-import           Control.Monad.Except             (runExceptT, throwError)
-import           Data.IORef                       (IORef, modifyIORef,
-                                                   readIORef)
-import           Data.Maybe                       (isJust, isNothing)
-import           Graphics.BigEngine.Configuration
-import           Graphics.BigEngine.Render        (Render, RenderState (..),
-                                                   liftIO, runRender)
-import qualified Graphics.GL                      as GL
-import           Graphics.UI.GLFW                 (OpenGLProfile (..),
-                                                   VideoMode (..), Window,
-                                                   WindowHint (..))
-import qualified Graphics.UI.GLFW                 as GLFW
+import           Control.Monad              (unless, void, when)
+import           Control.Monad.Except       (runExceptT, throwError)
+import           Data.IORef                 (IORef, modifyIORef, readIORef)
+import           Data.Maybe                 (isJust, isNothing)
+import           Graphics.Big.Configuration
+import           Graphics.Big.Render        (Render, RenderState (..), liftIO,
+                                             runRender)
+import qualified Graphics.GL                as GL
+import           Graphics.UI.GLFW           (OpenGLProfile (..), VideoMode (..),
+                                             Window, WindowHint (..))
+import qualified Graphics.UI.GLFW           as GLFW
 
 -- | Initialize the display from the 'Configuration'. If successful a
 -- 'RenderState' is returned.

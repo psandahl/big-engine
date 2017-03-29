@@ -30,11 +30,11 @@ test-suite big-engine-test
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Graphics.BigEngine
-                       Graphics.BigEngine.Callback
-                       Graphics.BigEngine.Configuration
-                       Graphics.BigEngine.Display
-                       Graphics.BigEngine.Render
+  exposed-modules:     Graphics.Big
+                       Graphics.Big.Callback
+                       Graphics.Big.Configuration
+                       Graphics.Big.Display
+                       Graphics.Big.Render
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , GLFW-b

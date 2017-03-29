@@ -1,5 +1,5 @@
 -- |
--- Module: Graphics.BigEngine
+-- Module: Graphics.Big
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
@@ -8,7 +8,7 @@
 -- Language: Haskell2010
 --
 -- A Batteries Included Graphics Engine.
-module Graphics.BigEngine
+module Graphics.Big
     ( Configuration (..)
     , DisplayMode (..)
     , Render
@@ -22,19 +22,18 @@ module Graphics.BigEngine
     , setWindowSizeCallback
     ) where
 
-import           Control.Monad                    (void)
-import           Data.IORef                       (modifyIORef, newIORef)
-import           Graphics.BigEngine.Callback      (initCallbacks)
-import           Graphics.BigEngine.Configuration (Configuration (..),
-                                                   DisplayMode (..))
-import           Graphics.BigEngine.Display       (initDisplay, renderLoop)
-import           Graphics.BigEngine.Render        (Render, RenderState (..),
-                                                   WindowSizeCallback,
-                                                   displayDimension,
-                                                   frameDuration, getAppState,
-                                                   modifyAppState, putAppState,
-                                                   runRender,
-                                                   setWindowSizeCallback)
+import           Control.Monad              (void)
+import           Data.IORef                 (modifyIORef, newIORef)
+import           Graphics.Big.Callback      (initCallbacks)
+import           Graphics.Big.Configuration (Configuration (..),
+                                             DisplayMode (..))
+import           Graphics.Big.Display       (initDisplay, renderLoop)
+import           Graphics.Big.Render        (Render, RenderState (..),
+                                             WindowSizeCallback,
+                                             displayDimension, frameDuration,
+                                             getAppState, modifyAppState,
+                                             putAppState, runRender,
+                                             setWindowSizeCallback)
 
 -- | Run the engine. Provided are the 'Configuration' and the application's
 -- empty state. The state will then be carried through all stages (preamble,

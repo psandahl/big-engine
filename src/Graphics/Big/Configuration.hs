@@ -1,17 +1,17 @@
 -- |
--- Module: Graphics.BigEngine.Configuration
+-- Module: Graphics.Big.Configuration
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.BigEngine.Configuration
+module Graphics.Big.Configuration
     ( Configuration (..)
     , DisplayMode (..)
     ) where
 
-import           Graphics.BigEngine.Render (Render)
+import           Graphics.Big.Render (Render)
 
 -- | The modes in which the display can be open.
 data DisplayMode
