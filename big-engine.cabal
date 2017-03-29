@@ -17,10 +17,11 @@ test-suite big-engine-test
   type:                exitcode-stdio-1.0
   hs-source-dirs:      test
   main-is:             Spec.hs
-  --other-modules:
+  other-modules:       VertexTests
   build-depends:       base >= 4.7 && < 5
                      , big-engine
                      , HUnit
+                     , linear
                      , test-framework
                      , test-framework-hunit
                      , test-framework-quickcheck2
@@ -31,7 +32,8 @@ test-suite big-engine-test
 library
   hs-source-dirs:      src
   exposed-modules:     Graphics.Big
-                       Graphics.Big.Callback
+                       Graphics.Big.Mesh.Vert_P
+  other-modules:       Graphics.Big.Callback
                        Graphics.Big.Configuration
                        Graphics.Big.Display
                        Graphics.Big.Program
