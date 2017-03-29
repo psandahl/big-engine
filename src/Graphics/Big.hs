@@ -20,6 +20,7 @@ module Graphics.Big
     , putAppState
     , modifyAppState
     , setWindowSizeCallback
+    , module Graphics.Big.Program
     ) where
 
 import           Control.Monad              (void)
@@ -28,6 +29,7 @@ import           Graphics.Big.Callback      (initCallbacks)
 import           Graphics.Big.Configuration (Configuration (..),
                                              DisplayMode (..))
 import           Graphics.Big.Display       (initDisplay, renderLoop)
+import           Graphics.Big.Program
 import           Graphics.Big.Render        (Render, RenderState (..),
                                              WindowSizeCallback,
                                              displayDimension, frameDuration,
