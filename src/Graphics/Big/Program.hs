@@ -9,9 +9,7 @@
 -- Portability: portable
 -- Language: Haskell2010
 module Graphics.Big.Program
-    ( Program
-    , Location
-    , ShaderType (..)
+    ( Location
     , Uniform (..)
     , fromByteString
     , delete
@@ -20,29 +18,23 @@ module Graphics.Big.Program
     , getUniformLocation
     ) where
 
-import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Data.ByteString.Char8  (ByteString)
-import qualified Data.ByteString.Char8  as BS
-import           Foreign                (Ptr, Storable, castPtr, nullPtr, peek,
-                                         with)
-import           Foreign.C              (peekCString, withCString)
-import           Graphics.GL            (GLboolean, GLchar, GLenum, GLfloat,
-                                         GLint, GLsizei, GLuint)
-import qualified Graphics.GL            as GL
-import           Linear                 (M44, V2, V3)
-
--- | Reprensentation of a shader program.
-newtype Program = Program GLuint
-    deriving Show
+import           Control.Monad.IO.Class   (MonadIO, liftIO)
+import           Data.ByteString.Char8    (ByteString)
+import qualified Data.ByteString.Char8    as BS
+import           Foreign                  (Ptr, Storable, castPtr, nullPtr,
+                                           peek, with)
+import           Foreign.C                (peekCString, withCString)
+import           Graphics.Big.GLResources (Program (..), Shader (..),
+                                           ShaderType (..), createProgram,
+                                           createShader, deleteProgram,
+                                           deleteShader)
+import           Graphics.GL              (GLboolean, GLchar, GLfloat, GLint,
+                                           GLsizei, GLuint)
+import qualified Graphics.GL              as GL
+import           Linear                   (M44, V2, V3)
 
 -- | Representation of a uniform location.
 newtype Location = Location GLint
-    deriving Show
-
--- | Specification of a shader type.
-data ShaderType
-    = VertexShader
-    | FragmentShader
     deriving Show
 
 -- | Class for setting a uniform value to a location.
@@ -79,7 +71,7 @@ fromByteString xs = do
 
 -- | Delete the shader program.
 delete :: MonadIO m => Program -> m ()
-delete (Program program) = GL.glDeleteProgram program
+delete = deleteProgram
 
 -- | Enable the program to become current.
 enable :: MonadIO m => Program -> m ()
@@ -97,34 +89,34 @@ getUniformLocation (Program program) loc =
 
 -- | Compile a single shader.
 compileShader :: MonadIO m => (ShaderType, FilePath, ByteString)
-              -> m (Either String GLuint)
+              -> m (Either String Shader)
 compileShader (shaderType, filePath, byteString) = do
-    handle <- GL.glCreateShader $ toGLenum shaderType
+    shader@(Shader handle) <- createShader shaderType
     setShaderSource handle byteString
     GL.glCompileShader handle
     status <- getShaderStatus $ GL.glGetShaderiv handle GL.GL_COMPILE_STATUS
     if status == GL.GL_TRUE
-        then return $ Right handle
+        then return $ Right shader
         else do
             errLog <- getInfoLog handle GL.glGetShaderInfoLog
             return $ Left (filePath ++ ": " ++ errLog)
 
 -- | Link shaders to a program.
-linkShaders :: MonadIO m => [GLuint] -> m (Either String Program)
+linkShaders :: MonadIO m => [Shader] -> m (Either String Program)
 linkShaders shaders = do
-    handle <- GL.glCreateProgram
-    mapM_ (GL.glAttachShader handle) shaders
+    program@(Program handle) <- createProgram
+    mapM_ (\(Shader shader) -> GL.glAttachShader handle shader) shaders
     GL.glLinkProgram handle
     status <- getShaderStatus $ GL.glGetProgramiv handle GL.GL_LINK_STATUS
     if status == GL.GL_TRUE
         then do
-            mapM_ (GL.glDetachShader handle) shaders
-            mapM_ GL.glDeleteShader shaders
-            return $ Right (Program handle)
+            mapM_ (\(Shader shader) -> GL.glDetachShader handle shader) shaders
+            mapM_ deleteShader shaders
+            return $ Right program
         else do
             errLog <- getInfoLog handle GL.glGetProgramInfoLog
-            mapM_ GL.glDeleteShader shaders
-            GL.glDeleteProgram handle
+            mapM_ deleteShader shaders
+            deleteProgram program
             return $ Left errLog
 
 -- | Set the shader source code.
@@ -153,7 +145,3 @@ getInfoLog handle getter = liftIO $ do
     withCString str $ \ptr -> do
         getter handle 500 nullPtr ptr
         peekCString ptr
-
-toGLenum :: ShaderType -> GLenum
-toGLenum VertexShader   = GL.GL_VERTEX_SHADER
-toGLenum FragmentShader = GL.GL_FRAGMENT_SHADER

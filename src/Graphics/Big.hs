@@ -11,6 +11,8 @@
 module Graphics.Big
     ( Configuration (..)
     , DisplayMode (..)
+    , Program (..)
+    , ShaderType (..)
     , Render
     , WindowSizeCallback
     , runEngine
@@ -29,6 +31,7 @@ import           Graphics.Big.Callback      (initCallbacks)
 import           Graphics.Big.Configuration (Configuration (..),
                                              DisplayMode (..))
 import           Graphics.Big.Display       (initDisplay, renderLoop)
+import           Graphics.Big.GLResources
 import           Graphics.Big.Program
 import           Graphics.Big.Render        (Render, RenderState (..),
                                              WindowSizeCallback,

@@ -36,6 +36,7 @@ library
   other-modules:       Graphics.Big.Callback
                        Graphics.Big.Configuration
                        Graphics.Big.Display
+                       Graphics.Big.GLResources
                        Graphics.Big.Program
                        Graphics.Big.Render
   build-depends:       base >= 4.7 && < 5
