@@ -11,10 +11,10 @@ module Graphics.Big.Mesh
     , fromVectors
     ) where
 
-import           Control.Monad.IO.Class   (MonadIO)
-import           Data.Vector.Storable     (Vector)
-import           Graphics.Big.GLResources (VertexArray)
-import           Graphics.GL              (GLuint)
+import           Control.Monad.IO.Class (MonadIO)
+import           Data.Vector.Storable   (Vector)
+import           Graphics.Big.Types     (VertexArray)
+import           Graphics.GL            (GLuint)
 
 data Mesh = Mesh
     { vao     :: !VertexArray

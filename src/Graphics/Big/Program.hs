@@ -1,6 +1,3 @@
-{-# LANGUAGE FlexibleInstances    #-}
-{-# LANGUAGE TypeSynonymInstances #-}
--- |
 -- Module: Graphics.Big.Program
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
@@ -9,9 +6,7 @@
 -- Portability: portable
 -- Language: Haskell2010
 module Graphics.Big.Program
-    ( Location
-    , Uniform (..)
-    , fromByteString
+    ( fromByteString
     , delete
     , enable
     , disable
@@ -21,44 +16,15 @@ module Graphics.Big.Program
 import           Control.Monad.IO.Class   (MonadIO, liftIO)
 import           Data.ByteString.Char8    (ByteString)
 import qualified Data.ByteString.Char8    as BS
-import           Foreign                  (Ptr, Storable, castPtr, nullPtr,
-                                           peek, with)
+import           Foreign                  (Ptr, nullPtr, peek, with)
 import           Foreign.C                (peekCString, withCString)
-import           Graphics.Big.GLResources (Program (..), Shader (..),
-                                           ShaderType (..), createProgram,
-                                           createShader, deleteProgram,
-                                           deleteShader)
-import           Graphics.GL              (GLboolean, GLchar, GLfloat, GLint,
-                                           GLsizei, GLuint)
+import           Graphics.Big.GLResources (createProgram, createShader,
+                                           deleteProgram, deleteShader)
+import           Graphics.Big.Types       (Location (..), Program (..),
+                                           Shader (..), ShaderType (..))
+import           Graphics.GL              (GLboolean, GLchar, GLint, GLsizei,
+                                           GLuint)
 import qualified Graphics.GL              as GL
-import           Linear                   (M44, V2, V3)
-
--- | Representation of a uniform location.
-newtype Location = Location GLint
-    deriving Show
-
--- | Class for setting a uniform value to a location.
-class Storable a => Uniform a where
-    setUniform :: MonadIO m => Location -> a -> m ()
-
--- | Uniform instance for GLfloat.
-instance Uniform GLfloat where
-    setUniform (Location loc) value = GL.glUniform1f loc value
-
--- | Uniform instance for V2 GLfloat.
-instance Uniform (V2 GLfloat) where
-    setUniform (Location loc) value = liftIO $
-        with value $ GL.glUniform2fv loc 1 . castPtr
-
--- | Uniform instance for V3 GLfloat.
-instance Uniform (V3 GLfloat) where
-    setUniform (Location loc) value = liftIO $
-        with value $ GL.glUniform3fv loc 1 . castPtr
-
--- | Uniform instance for M44 GLfloat.
-instance Uniform (M44 GLfloat) where
-    setUniform (Location loc) value = liftIO $
-        with value $ GL.glUniformMatrix4fv loc 1 GL.GL_TRUE . castPtr
 
 -- | Compile and link the provided shader sources to a shader program.
 fromByteString :: MonadIO m => [(ShaderType, FilePath, ByteString)]

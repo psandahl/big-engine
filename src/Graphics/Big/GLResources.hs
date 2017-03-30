@@ -7,15 +7,7 @@
 -- Portability: portable
 -- Language: Haskell2010
 module Graphics.Big.GLResources
-    ( ShaderType (..)
-    , ToGLenum (..)
-    , Shader (..)
-    , Program (..)
-    , Buffer (..)
-    , Framebuffer (..)
-    , Texture (..)
-    , VertexArray (..)
-    , createShader
+    ( createShader
     , deleteShader
     , createProgram
     , deleteProgram
@@ -31,38 +23,12 @@ module Graphics.Big.GLResources
 
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Foreign
-import           Graphics.GL            (GLenum, GLsizei, GLuint)
+import           Graphics.Big.Types     (Buffer (..), Framebuffer (..),
+                                         Program (..), Shader (..), ShaderType,
+                                         Texture (..), ToGLenum (..),
+                                         VertexArray (..))
+import           Graphics.GL            (GLsizei, GLuint)
 import qualified Graphics.GL            as GL
-
-class ToGLenum a where
-    toGLenum :: a -> GLenum
-
-data ShaderType
-    = VertexShader
-    | FragmentShader
-    deriving Show
-
-instance ToGLenum ShaderType where
-    toGLenum VertexShader   = GL.GL_VERTEX_SHADER
-    toGLenum FragmentShader = GL.GL_FRAGMENT_SHADER
-
-newtype Shader = Shader GLuint
-    deriving Show
-
-newtype Program = Program GLuint
-    deriving Show
-
-newtype Buffer = Buffer GLuint
-    deriving Show
-
-newtype Framebuffer = Framebuffer GLuint
-    deriving Show
-
-newtype Texture = Texture GLuint
-    deriving Show
-
-newtype VertexArray = VertexArray GLuint
-    deriving Show
 
 createShader :: MonadIO m => ShaderType -> m Shader
 createShader t = Shader <$> (GL.glCreateShader $ toGLenum t)

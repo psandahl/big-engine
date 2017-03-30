@@ -11,8 +11,6 @@
 module Graphics.Big
     ( Configuration (..)
     , DisplayMode (..)
-    , Program (..)
-    , ShaderType (..)
     , Render
     , WindowSizeCallback
     , runEngine
@@ -23,6 +21,7 @@ module Graphics.Big
     , modifyAppState
     , setWindowSizeCallback
     , module Graphics.Big.Program
+    , module Graphics.Big.Types
     ) where
 
 import           Control.Monad              (void)
@@ -31,7 +30,6 @@ import           Graphics.Big.Callback      (initCallbacks)
 import           Graphics.Big.Configuration (Configuration (..),
                                              DisplayMode (..))
 import           Graphics.Big.Display       (initDisplay, renderLoop)
-import           Graphics.Big.GLResources
 import           Graphics.Big.Program
 import           Graphics.Big.Render        (Render, RenderState (..),
                                              WindowSizeCallback,
@@ -39,6 +37,7 @@ import           Graphics.Big.Render        (Render, RenderState (..),
                                              getAppState, modifyAppState,
                                              putAppState, runRender,
                                              setWindowSizeCallback)
+import           Graphics.Big.Types
 
 -- | Run the engine. Provided are the 'Configuration' and the application's
 -- empty state. The state will then be carried through all stages (preamble,

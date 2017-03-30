@@ -40,6 +40,7 @@ library
                        Graphics.Big.Mesh
                        Graphics.Big.Program
                        Graphics.Big.Render
+                       Graphics.Big.Types
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , GLFW-b
