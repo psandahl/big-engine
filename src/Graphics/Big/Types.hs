@@ -9,8 +9,10 @@
 -- Portability: portable
 -- Language: Haskell2010
 module Graphics.Big.Types
-    ( ShaderType (..)
-    , ToGLenum (..)
+    ( ToGLenum (..)
+    , BufferTarget (..)
+    , BufferUsage (..)
+    , ShaderType (..)
     , Location (..)
     , Shader (..)
     , Program (..)
@@ -22,13 +24,25 @@ module Graphics.Big.Types
     ) where
 
 import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Foreign                (Storable, castPtr, with)
+import           Foreign                (castPtr, with)
 import           Graphics.GL            (GLenum, GLfloat, GLint, GLuint)
 import qualified Graphics.GL            as GL
 import           Linear                 (M44, V2, V3)
 
 class ToGLenum a where
     toGLenum :: a -> GLenum
+
+data BufferTarget = ArrayBuffer
+    deriving Show
+
+instance ToGLenum BufferTarget where
+    toGLenum ArrayBuffer = GL.GL_ARRAY_BUFFER
+
+data BufferUsage = StaticDraw
+    deriving Show
+
+instance ToGLenum BufferUsage where
+    toGLenum StaticDraw = GL.GL_STATIC_DRAW
 
 data ShaderType
     = VertexShader
@@ -61,7 +75,7 @@ newtype VertexArray = VertexArray GLuint
     deriving Show
 
 -- | Class for setting a uniform value to a location.
-class Storable a => Uniform a where
+class Uniform a where
     setUniform :: MonadIO m => Location -> a -> m ()
 
 -- | Uniform instance for GLfloat.
