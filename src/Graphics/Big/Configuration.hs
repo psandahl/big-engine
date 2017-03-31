@@ -35,8 +35,10 @@ data Configuration app = Configuration
     , windowCaption :: !String
       -- ^ The text caption for the window.
 
-    , setup         :: !(Render app (Either String ()))
-      -- ^ Setup callback executed before the render loop starts.
+    , setup         :: !(Render app (Either String app))
+      -- ^ Setup callback executed before the render loop starts. If the
+      -- setup is successful the callback shall return the application'
+      -- initial state.
 
     , eachFrame     :: !(Render app ())
       -- ^ Render one frame in the scene.

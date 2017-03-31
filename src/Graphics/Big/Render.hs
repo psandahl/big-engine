@@ -15,6 +15,7 @@ module Graphics.Big.Render
     , frameDuration
     , displayDimension
     , getAppState
+    , getAppStateUnsafe
     , putAppState
     , modifyAppState
     , setWindowSizeCallback
@@ -24,6 +25,7 @@ module Graphics.Big.Render
 import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (MonadReader, ReaderT, ask, runReaderT)
 import           Data.IORef             (IORef, modifyIORef, readIORef)
+import           Data.Maybe             (fromJust)
 import           Graphics.UI.GLFW       (Window)
 
 type WindowSizeCallback app = Int -> Int -> Render app ()
@@ -45,7 +47,7 @@ data RenderState app = RenderState
     , appWindowSizeCallback :: !(Maybe (WindowSizeCallback app))
       -- ^ The application's window size change callback.
 
-    , appState              :: !app
+    , appState              :: !(Maybe app)
       -- ^ The user provided application state.
     }
 
@@ -67,20 +69,26 @@ displayDimension :: Render app (Int, Int)
 displayDimension = dimension <$> (readIORef' =<< ask)
 
 -- | Read the app state.
-getAppState :: Render app app
+getAppState :: Render app (Maybe app)
 getAppState = appState <$> (readIORef' =<< ask)
+
+-- | Read the app state and force away Maybe. Unsafe, but shall normally be
+-- ok in eachFrame and teardown callbacks.
+getAppStateUnsafe :: Render app app
+getAppStateUnsafe = fromJust . appState <$> (readIORef' =<< ask)
 
 -- | Put a new app state.
 putAppState :: app -> Render app ()
 putAppState app = do
     ref <- ask
-    modifyIORef' ref $ \state -> state { appState = app }
+    modifyIORef' ref $ \state -> state { appState = Just app }
 
 -- | Modify the app state.
 modifyAppState :: (app -> app) -> Render app ()
 modifyAppState g = do
     ref <- ask
-    modifyIORef' ref $ \state -> state { appState = g (appState state) }
+    modifyIORef' ref $ \state ->
+        maybe state (\appState' -> state { appState = Just (g appState') }) (appState state)
 
 -- | Set (or unset) the 'WindowSizeCallback'.
 setWindowSizeCallback :: Maybe (WindowSizeCallback app) -> Render app ()

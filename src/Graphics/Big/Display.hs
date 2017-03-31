@@ -25,8 +25,8 @@ import qualified Graphics.UI.GLFW           as GLFW
 
 -- | Initialize the display from the 'Configuration'. If successful a
 -- 'RenderState' is returned.
-initDisplay :: Configuration app -> app -> IO (Either String (RenderState app))
-initDisplay config app = runExceptT $ do
+initDisplay :: Configuration app -> IO (Either String (RenderState app))
+initDisplay config = runExceptT $ do
     initSuccess <- liftIO GLFW.init
     unless (initSuccess) $
         throwError "GLFW initialization failed"
@@ -76,7 +76,7 @@ initDisplay config app = runExceptT $ do
         , lastTime = 0
         , duration = 0
         , appWindowSizeCallback = Nothing
-        , appState = app
+        , appState = Nothing
         }
 
 -- | The render loop. Run frame by frame until a close of the display is

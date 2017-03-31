@@ -17,6 +17,7 @@ module Graphics.Big
     , frameDuration
     , displayDimension
     , getAppState
+    , getAppStateUnsafe
     , putAppState
     , modifyAppState
     , setWindowSizeCallback
@@ -36,35 +37,36 @@ import           Graphics.Big.Program
 import           Graphics.Big.Render        (Render, RenderState (..),
                                              WindowSizeCallback,
                                              displayDimension, frameDuration,
-                                             getAppState, modifyAppState,
-                                             putAppState, runRender,
-                                             setWindowSizeCallback)
+                                             getAppState, getAppStateUnsafe,
+                                             modifyAppState, putAppState,
+                                             runRender, setWindowSizeCallback)
 import           Graphics.Big.Types
 
--- | Run the engine. Provided are the 'Configuration' and the application's
--- empty state. The state will then be carried through all stages (preamble,
--- frame and postable).
+-- | Run the engine. Provided is the 'Configuration'. The application's
+-- setup return an initial state, if successful.
+-- The state will then be carried through all stages (eachFrame and teardown).
 -- All stages, and all callbacks, are guaranteed to be performed in the
 -- same thread.
-runEngine :: Configuration app -> app -> IO (Either String ())
-runEngine config app = do
+runEngine :: Configuration app -> IO (Either String ())
+runEngine config = do
 
     -- Initalization stage, create the display according to configuration.
-    eState <- initDisplay config app
+    eState <- initDisplay config
     case eState of
         Right state -> do
 
             -- Make a mutable reference of the state.
             ref <- newIORef state
 
-            -- Application level initialization - preamble.
-            initResult <- runRender (setup config) ref
-            case initResult of
-                Right () -> do
+            -- Application level initialization - setup.
+            eAppState <- runRender (setup config) ref
+            case eAppState of
+                Right appState' -> do
 
-                    -- Reset the timing values in the state.
+                    -- Reset the timing values, and set the appState.
                     modifyIORef ref $ \s -> s { lastTime = 0
                                               , duration = 0
+                                              , appState = Just appState'
                                               }
 
                     -- Initialize callbacks.
