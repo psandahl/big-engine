@@ -28,7 +28,7 @@ import qualified Graphics.UI.GLFW           as GLFW
 initDisplay :: Configuration app -> IO (Either String (RenderState app))
 initDisplay config = runExceptT $ do
     initSuccess <- liftIO GLFW.init
-    unless (initSuccess) $
+    unless initSuccess $
         throwError "GLFW initialization failed"
 
     liftIO (GLFW.windowHint $ WindowHint'Resizable True)
@@ -40,7 +40,7 @@ initDisplay config = runExceptT $ do
 
     (win, width, height) <- case displayMode config of
         FullScreen -> do
-            monitor <- liftIO $ GLFW.getPrimaryMonitor
+            monitor <- liftIO GLFW.getPrimaryMonitor
             when (isNothing monitor) $
                 throwError "Cannot get hold of primary monitor"
             let Just monitor' = monitor

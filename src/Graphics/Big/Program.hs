@@ -7,9 +7,9 @@
 -- Language: Haskell2010
 module Graphics.Big.Program
     ( fromByteString
-    , delete
-    , enable
-    , disable
+    , deleteProgram
+    , enableProgram
+    , disableProgram
     , getUniformLocation
     ) where
 
@@ -18,8 +18,7 @@ import           Data.ByteString.Char8    (ByteString)
 import qualified Data.ByteString.Char8    as BS
 import           Foreign                  (Ptr, nullPtr, peek, with)
 import           Foreign.C                (peekCString, withCString)
-import           Graphics.Big.GLResources (createProgram, createShader,
-                                           deleteProgram, deleteShader)
+import qualified Graphics.Big.GLResources as GLResources
 import           Graphics.Big.Types       (Location (..), Program (..),
                                            Shader (..), ShaderType (..))
 import           Graphics.GL              (GLboolean, GLchar, GLint, GLsizei,
@@ -36,28 +35,28 @@ fromByteString xs = do
         Left err      -> return $ Left err
 
 -- | Delete the shader program.
-delete :: MonadIO m => Program -> m ()
-delete = deleteProgram
+deleteProgram :: MonadIO m => Program -> m ()
+deleteProgram = GLResources.deleteProgram
 
 -- | Enable the program to become current.
-enable :: MonadIO m => Program -> m ()
-enable (Program program) = GL.glUseProgram program
+enableProgram :: MonadIO m => Program -> m ()
+enableProgram (Program program) = GL.glUseProgram program
 
 -- | Disable the current program.
-disable :: MonadIO m => m ()
-disable = GL.glUseProgram 0
+disableProgram :: MonadIO m => m ()
+disableProgram = GL.glUseProgram 0
 
 -- | Get the named uniform location.
 getUniformLocation :: MonadIO m => Program -> String -> m Location
 getUniformLocation (Program program) loc =
     Location <$>
-        (liftIO $ withCString loc $ \cloc -> GL.glGetUniformLocation program cloc)
+        liftIO (withCString loc $ \cloc -> GL.glGetUniformLocation program cloc)
 
 -- | Compile a single shader.
 compileShader :: MonadIO m => (ShaderType, FilePath, ByteString)
               -> m (Either String Shader)
 compileShader (shaderType, filePath, byteString) = do
-    shader@(Shader handle) <- createShader shaderType
+    shader@(Shader handle) <- GLResources.createShader shaderType
     setShaderSource handle byteString
     GL.glCompileShader handle
     status <- getShaderStatus $ GL.glGetShaderiv handle GL.GL_COMPILE_STATUS
@@ -70,18 +69,18 @@ compileShader (shaderType, filePath, byteString) = do
 -- | Link shaders to a program.
 linkShaders :: MonadIO m => [Shader] -> m (Either String Program)
 linkShaders shaders = do
-    program@(Program handle) <- createProgram
+    program@(Program handle) <- GLResources.createProgram
     mapM_ (\(Shader shader) -> GL.glAttachShader handle shader) shaders
     GL.glLinkProgram handle
     status <- getShaderStatus $ GL.glGetProgramiv handle GL.GL_LINK_STATUS
     if status == GL.GL_TRUE
         then do
             mapM_ (\(Shader shader) -> GL.glDetachShader handle shader) shaders
-            mapM_ deleteShader shaders
+            mapM_ GLResources.deleteShader shaders
             return $ Right program
         else do
             errLog <- getInfoLog handle GL.glGetProgramInfoLog
-            mapM_ deleteShader shaders
+            mapM_ GLResources.deleteShader shaders
             deleteProgram program
             return $ Left errLog
 

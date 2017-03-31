@@ -88,7 +88,7 @@ class Uniform a where
 
 -- | Uniform instance for GLfloat.
 instance Uniform GLfloat where
-    setUniform (Location loc) value = GL.glUniform1f loc value
+    setUniform (Location loc) = GL.glUniform1f loc
 
 -- | Uniform instance for V2 GLfloat.
 instance Uniform (V2 GLfloat) where

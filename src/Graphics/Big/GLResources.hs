@@ -31,7 +31,7 @@ import           Graphics.GL            (GLsizei, GLuint)
 import qualified Graphics.GL            as GL
 
 createShader :: MonadIO m => ShaderType -> m Shader
-createShader t = Shader <$> (GL.glCreateShader $ toGLenum t)
+createShader t = Shader <$> GL.glCreateShader (toGLenum t)
 
 deleteShader :: MonadIO m => Shader -> m ()
 deleteShader (Shader s) = GL.glDeleteShader s
