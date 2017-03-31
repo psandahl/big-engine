@@ -20,6 +20,7 @@ module Graphics.Big
     , putAppState
     , modifyAppState
     , setWindowSizeCallback
+    , module Graphics.Big.Mesh
     , module Graphics.Big.Program
     , module Graphics.Big.Types
     ) where
@@ -30,6 +31,7 @@ import           Graphics.Big.Callback      (initCallbacks)
 import           Graphics.Big.Configuration (Configuration (..),
                                              DisplayMode (..))
 import           Graphics.Big.Display       (initDisplay, renderLoop)
+import           Graphics.Big.Mesh
 import           Graphics.Big.Program
 import           Graphics.Big.Render        (Render, RenderState (..),
                                              WindowSizeCallback,

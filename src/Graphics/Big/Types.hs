@@ -12,6 +12,7 @@ module Graphics.Big.Types
     ( ToGLenum (..)
     , BufferTarget (..)
     , BufferUsage (..)
+    , Primitive (..)
     , ShaderType (..)
     , Location (..)
     , Shader (..)
@@ -52,6 +53,13 @@ data ShaderType
 instance ToGLenum ShaderType where
     toGLenum VertexShader   = GL.GL_VERTEX_SHADER
     toGLenum FragmentShader = GL.GL_FRAGMENT_SHADER
+
+data Primitive
+    = Triangles
+    deriving Show
+
+instance ToGLenum Primitive where
+    toGLenum Triangles = GL.GL_TRIANGLES
 
 newtype Location = Location GLint
     deriving Show
