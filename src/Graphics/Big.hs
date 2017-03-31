@@ -58,7 +58,7 @@ runEngine config app = do
             ref <- newIORef state
 
             -- Application level initialization - preamble.
-            initResult <- runRender (preamble config) ref
+            initResult <- runRender (setup config) ref
             case initResult of
                 Right () -> do
 
@@ -71,10 +71,10 @@ runEngine config app = do
                     initCallbacks ref
 
                     -- Run the render loop until request to stop.
-                    renderLoop ref (frame config)
+                    renderLoop ref (eachFrame config)
 
                     -- Final stage. Run the postamble.
-                    void $ runRender (postamble config) ref
+                    void $ runRender (teardown config) ref
 
                     return $ Right ()
 

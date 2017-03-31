@@ -35,12 +35,12 @@ data Configuration app = Configuration
     , windowCaption :: !String
       -- ^ The text caption for the window.
 
-    , preamble      :: !(Render app (Either String ()))
-      -- ^ Preamble callback executed before the render loop starts.
+    , setup         :: !(Render app (Either String ()))
+      -- ^ Setup callback executed before the render loop starts.
 
-    , frame         :: !(Render app ())
+    , eachFrame     :: !(Render app ())
       -- ^ Render one frame in the scene.
 
-    , postamble     :: !(Render app ())
-      -- ^ Postamble callback executed after the render loop has terminated.
+    , teardown      :: !(Render app ())
+      -- ^ Teardown callback executed after the render loop has terminated.
     }
