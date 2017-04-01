@@ -33,11 +33,13 @@ library
   hs-source-dirs:      src
   exposed-modules:     Graphics.Big
                        Graphics.Big.Mesh.Vert_P
+                       Graphics.Big.Mesh.Vert_P_C
   other-modules:       Graphics.Big.Callback
                        Graphics.Big.Configuration
                        Graphics.Big.Display
                        Graphics.Big.GLResources
                        Graphics.Big.Mesh
+                       Graphics.Big.Mesh.BufferHelper
                        Graphics.Big.Program
                        Graphics.Big.Render
                        Graphics.Big.Types
