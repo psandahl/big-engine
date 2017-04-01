@@ -16,7 +16,7 @@ import           Control.Monad.Except       (runExceptT, throwError)
 import           Data.IORef                 (IORef, modifyIORef, readIORef)
 import           Data.Maybe                 (isJust, isNothing)
 import           Graphics.Big.Configuration
-import           Graphics.Big.Render        (Render, RenderState (..), liftIO,
+import           Graphics.Big.Render        (RenderState (..), liftIO,
                                              runRender)
 import qualified Graphics.GL                as GL
 import           Graphics.UI.GLFW           (OpenGLProfile (..), VideoMode (..),
@@ -72,7 +72,7 @@ initDisplay config = runExceptT $ do
     -- Create and return the 'RenderState'. The application is ready to go.
     return RenderState
         { window = win
-        , dimension = (width, height)
+        , dimensions = (width, height)
         , lastTime = 0
         , duration = 0
         , appWindowSizeCallback = Nothing
@@ -81,8 +81,8 @@ initDisplay config = runExceptT $ do
 
 -- | The render loop. Run frame by frame until a close of the display is
 -- requested.
-renderLoop :: IORef (RenderState app) -> Render app () -> IO ()
-renderLoop ref action = go =<< (window <$> readIORef ref)
+renderLoop :: IORef (RenderState app) -> Configuration app -> IO ()
+renderLoop ref config = go =<< (window <$> readIORef ref)
     where
         go :: Window -> IO ()
         go win = do
@@ -91,20 +91,23 @@ renderLoop ref action = go =<< (window <$> readIORef ref)
             when (isJust now) $ do
                 let Just now' = now
 
-                -- Update the time values.
+                -- 1. Update the time values for the frame.
                 modifyIORef ref $ \state ->
                     state { duration = now' - lastTime state
                           , lastTime = now'
                       }
 
-                -- Render the frame.
-                void $ runRender action ref
-
-                -- Swap off-screen and screen buffers.
-                GLFW.swapBuffers win
-
-                -- Poll events and execute all callbacks.
+                -- 2. Poll events and execute all event callbacks for the frame.
                 GLFW.pollEvents
+
+                -- 4. Allow the frame to perform time based animations.
+                void $ runRender (animate config) ref
+
+                -- 4. Render the frame.
+                void $ runRender (render config) ref
+
+                -- 5. Swap off-screen and screen buffers.
+                GLFW.swapBuffers win
 
                 -- Check if a window close is requested. Otherwise continue one
                 -- more iteration.

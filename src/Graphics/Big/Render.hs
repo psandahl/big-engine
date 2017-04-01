@@ -13,7 +13,7 @@ module Graphics.Big.Render
     , WindowSizeCallback
     , runRender
     , frameDuration
-    , displayDimension
+    , displayDimensions
     , getAppState
     , getAppStateUnsafe
     , putAppState
@@ -35,7 +35,7 @@ data RenderState app = RenderState
     { window                :: !Window
       -- ^ The GLFW window.
 
-    , dimension             :: !(Int, Int)
+    , dimensions            :: !(Int, Int)
       -- ^ The current dimensions for the window (width, height).
 
     , lastTime              :: !Double
@@ -64,9 +64,9 @@ runRender action = runReaderT (extractRender action)
 frameDuration :: Render app Double
 frameDuration = duration <$> (readIORef' =<< ask)
 
--- | The display dimension as (width, height).
-displayDimension :: Render app (Int, Int)
-displayDimension = dimension <$> (readIORef' =<< ask)
+-- | The display dimensions as (width, height).
+displayDimensions :: Render app (Int, Int)
+displayDimensions = dimensions <$> (readIORef' =<< ask)
 
 -- | Read the app state.
 getAppState :: Render app (Maybe app)

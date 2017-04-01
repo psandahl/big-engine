@@ -40,9 +40,15 @@ data Configuration app = Configuration
       -- setup is successful the callback shall return the application'
       -- initial state.
 
-    , eachFrame     :: !(Render app ())
-      -- ^ Render one frame in the scene.
+    , animate       :: !(Render app ())
+      -- ^ Animate one frame in the scene. Called every frame.
+
+    , render        :: !(Render app ())
+      -- ^ Render one frame in the scene. Called every frame. No real
+      -- difference between animate and render, but help separate concerns
+      -- in the code.
 
     , teardown      :: !(Render app ())
       -- ^ Teardown callback executed after the render loop has terminated.
+      -- Time to clean up stuff.
     }

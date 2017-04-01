@@ -15,7 +15,7 @@ module Graphics.Big
     , WindowSizeCallback
     , runEngine
     , frameDuration
-    , displayDimension
+    , displayDimensions
     , getAppState
     , getAppStateUnsafe
     , putAppState
@@ -36,7 +36,7 @@ import           Graphics.Big.Mesh
 import           Graphics.Big.Program
 import           Graphics.Big.Render        (Render, RenderState (..),
                                              WindowSizeCallback,
-                                             displayDimension, frameDuration,
+                                             displayDimensions, frameDuration,
                                              getAppState, getAppStateUnsafe,
                                              modifyAppState, putAppState,
                                              runRender, setWindowSizeCallback)
@@ -44,7 +44,7 @@ import           Graphics.Big.Types
 
 -- | Run the engine. Provided is the 'Configuration'. The application's
 -- setup return an initial state, if successful.
--- The state will then be carried through all stages (eachFrame and teardown).
+-- The state will then be carried through all stages (animate, render and teardown).
 -- All stages, and all callbacks, are guaranteed to be performed in the
 -- same thread.
 runEngine :: Configuration app -> IO (Either String ())
@@ -72,10 +72,10 @@ runEngine config = do
                     -- Initialize callbacks.
                     initCallbacks ref
 
-                    -- Run the render loop until request to stop.
-                    renderLoop ref (eachFrame config)
+                    -- Run the render loop until requested to stop.
+                    renderLoop ref config
 
-                    -- Final stage. Run the postamble.
+                    -- Final stage. Run the teardown.
                     void $ runRender (teardown config) ref
 
                     return $ Right ()

@@ -28,7 +28,7 @@ windowSizeCallback ref _window width height = do
     GL.glViewport 0 0 (fromIntegral width) (fromIntegral height)
 
     -- Store the values in the state.
-    modifyIORef ref $ \state -> state { dimension = (width, height) }
+    modifyIORef ref $ \state -> state { dimensions = (width, height) }
 
     -- If the application callback is set, call it.
     state <- readIORef ref
