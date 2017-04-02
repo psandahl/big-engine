@@ -10,17 +10,16 @@ module Graphics.Big.Mesh.Vert_P_C
     ( Vertex (..)
     ) where
 
-import           Control.Monad            (unless)
-import qualified Data.Vector.Storable     as Vector
-import           Foreign                  (Storable (..), castPtr, nullPtr,
-                                           plusPtr)
-import           Graphics.Big.GLResources (genBuffer, genVertexArray)
-import           Graphics.Big.Mesh        (Attribute (..))
-import           Graphics.Big.Types       (Buffer (..), ToGLenum (..),
-                                           VertexArray (..))
-import           Graphics.GL              (GLfloat)
-import qualified Graphics.GL              as GL
-import           Linear                   (V3, V4)
+import           Control.Monad                  (unless)
+import qualified Data.Vector.Storable           as Vector
+import           Foreign                        (Storable (..), castPtr,
+                                                 plusPtr)
+import           Graphics.Big.Mesh              (Attribute (..))
+import           Graphics.Big.Mesh.BufferHelper (allocBoundBuffers,
+                                                 fillBoundVBO, pointerOffset)
+import           Graphics.GL                    (GLfloat)
+import qualified Graphics.GL                    as GL
+import           Linear                         (V3, V4)
 
 -- | A convenience definition of a vertex containing two attributes.
 -- The vertex position and the vertex color.
@@ -45,3 +44,23 @@ instance Storable Vertex where
             cPtr = castPtr (pPtr `plusPtr` sizeOf (position v))
         poke pPtr $ position v
         poke cPtr $ color v
+
+-- | Attribute instance.
+instance Attribute Vertex where
+    attribute bufferUsage vertices = do
+        (vao, _vbo) <- allocBoundBuffers
+        unless (Vector.null vertices) $ do
+            item <- fillBoundVBO vertices bufferUsage
+            let itemSize = fromIntegral $ sizeOf item
+
+            GL.glEnableVertexAttribArray 0
+            GL.glVertexAttribPointer 0 3 GL.GL_FLOAT GL.GL_FALSE
+                                     itemSize
+                                     (pointerOffset 0)
+
+            GL.glEnableVertexAttribArray 1
+            GL.glVertexAttribPointer 1 4 GL.GL_FLOAT GL.GL_FALSE
+                                     itemSize
+                                     (pointerOffset $ sizeOf (position item))
+
+        return vao

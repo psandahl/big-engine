@@ -19,7 +19,6 @@ import           Foreign                  (Ptr, Storable (..), nullPtr, plusPtr)
 import           Graphics.Big.GLResources (genBuffer, genVertexArray)
 import           Graphics.Big.Types       (Buffer (..), BufferUsage,
                                            ToGLenum (..), VertexArray (..))
-import           Graphics.GL              (GLsizei)
 import qualified Graphics.GL              as GL
 
 -- | Allocate one VAO and one VBO. Bind both buffers before returning them.
@@ -35,7 +34,7 @@ allocBoundBuffers = do
 
 -- | Fill a 'Buffer' with data. It is required that the buffer is bound as a
 -- GL_ARRAY_BUFFER, and that the vertices vector is non empty.
-fillBoundVBO :: (Storable a, MonadIO m) => Vector a -> BufferUsage -> m GLsizei
+fillBoundVBO :: (Storable a, MonadIO m) => Vector a -> BufferUsage -> m a
 fillBoundVBO vertices bufferUsage = liftIO $ do
     Vector.unsafeWith vertices $ \ptr -> do
         let first = Vector.head vertices
@@ -44,7 +43,7 @@ fillBoundVBO vertices bufferUsage = liftIO $ do
         GL.glBufferData GL.GL_ARRAY_BUFFER (fromIntegral storageSize)
                         ptr (toGLenum bufferUsage)
 
-        return (fromIntegral itemSize)
+        return first
 
 -- | Give a byte offset expressed as a pointer.
 pointerOffset :: Int -> Ptr a

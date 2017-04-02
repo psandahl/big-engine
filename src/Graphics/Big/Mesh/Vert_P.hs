@@ -38,7 +38,8 @@ instance Attribute Vertex where
         (vao, _vbo) <- allocBoundBuffers
 
         unless (Vector.null vertices) $ do
-            itemSize <- fillBoundVBO vertices bufferUsage
+            item <- fillBoundVBO vertices bufferUsage
+            let itemSize = fromIntegral $ sizeOf item
 
             GL.glEnableVertexAttribArray 0
             GL.glVertexAttribPointer 0 3 GL.GL_FLOAT GL.GL_FALSE
