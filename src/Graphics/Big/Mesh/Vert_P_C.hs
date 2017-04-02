@@ -20,13 +20,13 @@ import           Graphics.Big.Types       (Buffer (..), ToGLenum (..),
                                            VertexArray (..))
 import           Graphics.GL              (GLfloat)
 import qualified Graphics.GL              as GL
-import           Linear                   (V3 (..))
+import           Linear                   (V3, V4)
 
 -- | A convenience definition of a vertex containing two attributes.
 -- The vertex position and the vertex color.
 data Vertex = Vertex
     { position :: !(V3 GLfloat)
-    , color    :: !(V3 GLfloat)
+    , color    :: !(V4 GLfloat)
     } deriving (Eq, Show)
 
 -- | Storable instance.

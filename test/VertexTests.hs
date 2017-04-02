@@ -8,7 +8,7 @@ module VertexTests
     ) where
 
 import           Foreign                    (Storable (..), peek, with)
-import           Linear                     (V3 (..))
+import           Linear                     (V3 (..), V4 (..))
 import           Test.HUnit
 
 import qualified Graphics.Big.Mesh.Vert_P   as Vert_P
@@ -27,7 +27,7 @@ vertP_encodeDecode = do
     vert @=? vert'
 
 vertP_C_sizeOf :: Assertion
-vertP_C_sizeOf = 24 @=? sizeOf sampleVertP_C
+vertP_C_sizeOf = 28 @=? sizeOf sampleVertP_C
 
 vertP_C_alignment :: Assertion
 vertP_C_alignment = 4 @=? alignment sampleVertP_C
@@ -44,7 +44,7 @@ sampleVertP = Vert_P.Vertex { Vert_P.position = V3 1 2 3 }
 sampleVertP_C :: Vert_P_C.Vertex
 sampleVertP_C =
     Vert_P_C.Vertex { Vert_P_C.position = V3 1 2 3
-                    , Vert_P_C.color = V3 4 5 6
+                    , Vert_P_C.color = V4 4 5 6 7
                     }
 
 encodeDecode :: Storable a => a -> IO a
