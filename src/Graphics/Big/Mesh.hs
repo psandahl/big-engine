@@ -9,7 +9,7 @@
 module Graphics.Big.Mesh
     ( Mesh
     , Attribute (..)
-    , fromVectors
+    , meshFromVectors
     , enableMesh
     , disableMesh
     , deleteMesh
@@ -34,9 +34,9 @@ class Attribute a where
     attribute :: MonadIO m => BufferUsage -> Vector a -> m VertexArray
 
 -- | Build a 'Mesh' from vectors with vertex attribute data and index data.
-fromVectors :: (Attribute a, MonadIO m)
+meshFromVectors :: (Attribute a, MonadIO m)
             => BufferUsage -> Vector a -> Vector GLuint -> m Mesh
-fromVectors bufferUsage vertices indices' = do
+meshFromVectors bufferUsage vertices indices' = do
     vao' <- attribute bufferUsage vertices
     return Mesh { vao = vao', indices = indices' }
 

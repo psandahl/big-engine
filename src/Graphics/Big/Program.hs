@@ -6,7 +6,7 @@
 -- Portability: portable
 -- Language: Haskell2010
 module Graphics.Big.Program
-    ( fromByteString
+    ( programFromByteStrings
     , deleteProgram
     , enableProgram
     , disableProgram
@@ -26,9 +26,9 @@ import           Graphics.GL              (GLboolean, GLchar, GLint, GLsizei,
 import qualified Graphics.GL              as GL
 
 -- | Compile and link the provided shader sources to a shader program.
-fromByteString :: MonadIO m => [(ShaderType, FilePath, ByteString)]
-               -> m (Either String Program)
-fromByteString xs = do
+programFromByteStrings :: MonadIO m => [(ShaderType, FilePath, ByteString)]
+                       -> m (Either String Program)
+programFromByteStrings xs = do
     eShaders <- sequence <$> mapM compileShader xs
     case eShaders of
         Right shaders -> linkShaders shaders

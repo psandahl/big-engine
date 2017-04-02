@@ -35,7 +35,7 @@ allocBoundBuffers = do
 -- | Fill a 'Buffer' with data. It is required that the buffer is bound as a
 -- GL_ARRAY_BUFFER, and that the vertices vector is non empty.
 fillBoundVBO :: (Storable a, MonadIO m) => Vector a -> BufferUsage -> m a
-fillBoundVBO vertices bufferUsage = liftIO $ do
+fillBoundVBO vertices bufferUsage = liftIO $
     Vector.unsafeWith vertices $ \ptr -> do
         let first = Vector.head vertices
             itemSize = sizeOf first
