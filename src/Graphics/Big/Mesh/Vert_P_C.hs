@@ -47,8 +47,8 @@ instance Storable Vertex where
 
 -- | Attribute instance.
 instance Attribute Vertex where
-    attribute bufferUsage vertices = do
-        (vao, _vbo) <- allocBoundBuffers
+    initAttributes bufferUsage vertices = do
+        buffers <- allocBoundBuffers
         unless (Vector.null vertices) $ do
             item <- fillBoundVBO vertices bufferUsage
             let itemSize = fromIntegral $ sizeOf item
@@ -63,4 +63,4 @@ instance Attribute Vertex where
                                      itemSize
                                      (pointerOffset $ sizeOf (position item))
 
-        return vao
+        return buffers

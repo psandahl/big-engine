@@ -34,8 +34,8 @@ instance Storable Vertex where
 
 -- | Attribute instance.
 instance Attribute Vertex where
-    attribute bufferUsage vertices = do
-        (vao, _vbo) <- allocBoundBuffers
+    initAttributes bufferUsage vertices = do
+        buffers <- allocBoundBuffers
 
         unless (Vector.null vertices) $ do
             item <- fillBoundVBO vertices bufferUsage
@@ -47,4 +47,4 @@ instance Attribute Vertex where
 
         GL.glBindVertexArray 0
 
-        return vao
+        return buffers

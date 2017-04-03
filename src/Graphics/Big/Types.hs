@@ -39,11 +39,14 @@ data BufferTarget = ArrayBuffer
 instance ToGLenum BufferTarget where
     toGLenum ArrayBuffer = GL.GL_ARRAY_BUFFER
 
-data BufferUsage = StaticDraw
+data BufferUsage
+    = DynamicDraw
+    | StaticDraw
     deriving Show
 
 instance ToGLenum BufferUsage where
-    toGLenum StaticDraw = GL.GL_STATIC_DRAW
+    toGLenum DynamicDraw = GL.GL_DYNAMIC_DRAW
+    toGLenum StaticDraw  = GL.GL_STATIC_DRAW
 
 data ShaderType
     = VertexShader
