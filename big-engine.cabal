@@ -42,10 +42,12 @@ library
                        Graphics.Big.Mesh.BufferHelper
                        Graphics.Big.Program
                        Graphics.Big.Render
+                       Graphics.Big.TextureLoader
                        Graphics.Big.Types
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , GLFW-b
+                     , JuicyPixels
                      , linear
                      , mtl
                      , OpenGLRaw

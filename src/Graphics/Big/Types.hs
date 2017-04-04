@@ -10,6 +10,7 @@
 -- Language: Haskell2010
 module Graphics.Big.Types
     ( ToGLenum (..)
+    , ToGLint (..)
     , BufferTarget (..)
     , BufferUsage (..)
     , Primitive (..)
@@ -20,6 +21,10 @@ module Graphics.Big.Types
     , Buffer (..)
     , Framebuffer (..)
     , Texture (..)
+    , TextureFormat (..)
+    , TextureMagFilter (..)
+    , TextureMinFilter (..)
+    , TextureWrap (..)
     , VertexArray (..)
     , Uniform (..)
     ) where
@@ -32,6 +37,9 @@ import           Linear                 (M44, V2, V3)
 
 class ToGLenum a where
     toGLenum :: a -> GLenum
+
+class ToGLint a where
+    toGLint :: a -> GLint
 
 data BufferTarget = ArrayBuffer
     deriving Show
@@ -81,6 +89,48 @@ newtype Framebuffer = Framebuffer GLuint
 
 newtype Texture = Texture GLuint
     deriving Show
+
+data TextureFormat
+    = RGB8
+    | RGBA8
+    deriving Show
+
+data TextureMagFilter
+    = MagLinear
+    | MagNearest
+    deriving Show
+
+instance ToGLint TextureMagFilter where
+    toGLint MagLinear  = fromIntegral GL.GL_LINEAR
+    toGLint MagNearest = fromIntegral GL.GL_NEAREST
+
+data TextureMinFilter
+    = MinLinear
+    | MinNearest
+    | MinNearestMipmapNearest
+    | MinLinearMipmapNearest
+    | MinNearestMipmapLinear
+    | MinLinearMipmapLinear
+    deriving Show
+
+instance ToGLint TextureMinFilter where
+    toGLint MinLinear  = fromIntegral GL.GL_LINEAR
+    toGLint MinNearest = fromIntegral GL.GL_NEAREST
+    toGLint MinNearestMipmapNearest = fromIntegral GL.GL_NEAREST_MIPMAP_NEAREST
+    toGLint MinLinearMipmapNearest = fromIntegral GL.GL_LINEAR_MIPMAP_NEAREST
+    toGLint MinNearestMipmapLinear = fromIntegral GL.GL_NEAREST_MIPMAP_LINEAR
+    toGLint MinLinearMipmapLinear = fromIntegral GL.GL_LINEAR_MIPMAP_LINEAR
+
+data TextureWrap
+    = WrapRepeat
+    | WrapClampToEdge
+    | WrapClampToBorder
+    deriving Show
+
+instance ToGLint TextureWrap where
+    toGLint WrapRepeat        = fromIntegral GL.GL_REPEAT
+    toGLint WrapClampToEdge   = fromIntegral GL.GL_CLAMP_TO_EDGE
+    toGLint WrapClampToBorder = fromIntegral GL.GL_CLAMP_TO_BORDER
 
 newtype VertexArray = VertexArray GLuint
     deriving Show

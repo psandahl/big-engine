@@ -23,6 +23,7 @@ module Graphics.Big
     , setWindowSizeCallback
     , module Graphics.Big.Mesh
     , module Graphics.Big.Program
+    , module Graphics.Big.TextureLoader
     , module Graphics.Big.Types
     ) where
 
@@ -40,6 +41,7 @@ import           Graphics.Big.Render        (Render, RenderState (..),
                                              getAppState, getAppStateUnsafe,
                                              modifyAppState, putAppState,
                                              runRender, setWindowSizeCallback)
+import           Graphics.Big.TextureLoader
 import           Graphics.Big.Types
 
 -- | Run the engine. Provided is the 'Configuration'. The application's
