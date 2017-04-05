@@ -34,6 +34,7 @@ library
   exposed-modules:     Graphics.Big
                        Graphics.Big.Mesh.Vert_P
                        Graphics.Big.Mesh.Vert_P_C
+                       Graphics.Big.Mesh.Vert_P_Tx
   other-modules:       Graphics.Big.Callback
                        Graphics.Big.Configuration
                        Graphics.Big.Display
