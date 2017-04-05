@@ -8,15 +8,19 @@ module VertexTests
     , vertP_Tx_sizeOf
     , vertP_Tx_alignment
     , vertP_Tx_encodeDecode
+    , vertP_N_Tx_sizeOf
+    , vertP_N_Tx_alignment
+    , vertP_N_Tx_encodeDecode
     ) where
 
-import           Foreign                     (Storable (..), peek, with)
-import           Linear                      (V2 (..), V3 (..), V4 (..))
+import           Foreign                       (Storable (..), peek, with)
+import           Linear                        (V2 (..), V3 (..), V4 (..))
 import           Test.HUnit
 
-import qualified Graphics.Big.Mesh.Vert_P    as Vert_P
-import qualified Graphics.Big.Mesh.Vert_P_C  as Vert_P_C
-import qualified Graphics.Big.Mesh.Vert_P_Tx as Vert_P_Tx
+import qualified Graphics.Big.Mesh.Vert_P      as Vert_P
+import qualified Graphics.Big.Mesh.Vert_P_C    as Vert_P_C
+import qualified Graphics.Big.Mesh.Vert_P_N_Tx as Vert_P_N_Tx
+import qualified Graphics.Big.Mesh.Vert_P_Tx   as Vert_P_Tx
 
 vertP_sizeOf :: Assertion
 vertP_sizeOf = 12 @=? sizeOf sampleVertP
@@ -54,6 +58,18 @@ vertP_Tx_encodeDecode = do
     vert' <- encodeDecode vert
     vert @=? vert'
 
+vertP_N_Tx_sizeOf :: Assertion
+vertP_N_Tx_sizeOf = 32 @=? sizeOf sampleVertP_N_Tx
+
+vertP_N_Tx_alignment :: Assertion
+vertP_N_Tx_alignment = 4 @=? alignment sampleVertP_N_Tx
+
+vertP_N_Tx_encodeDecode :: Assertion
+vertP_N_Tx_encodeDecode = do
+    let vert = sampleVertP_N_Tx
+    vert' <- encodeDecode vert
+    vert @=? vert'
+
 sampleVertP :: Vert_P.Vertex
 sampleVertP = Vert_P.Vertex { Vert_P.position = V3 1 2 3 }
 
@@ -68,6 +84,13 @@ sampleVertP_Tx =
     Vert_P_Tx.Vertex { Vert_P_Tx.position = V3 1 2 3
                      , Vert_P_Tx.texCoord = V2 4 5
                      }
+
+sampleVertP_N_Tx :: Vert_P_N_Tx.Vertex
+sampleVertP_N_Tx =
+    Vert_P_N_Tx.Vertex { Vert_P_N_Tx.position = V3 1 2 3
+                       , Vert_P_N_Tx.normal = V3 4 5 6
+                       , Vert_P_N_Tx.texCoord = V2 7 8
+                       }
 
 encodeDecode :: Storable a => a -> IO a
 encodeDecode value = with value peek

@@ -20,5 +20,8 @@ testSuite =
         , testCase "vert_P_Tx sizeOf == 20" vertP_Tx_sizeOf
         , testCase "Vert_P_Tx alignment == 4" vertP_Tx_alignment
         , testCase "vertP_Tx_encodeDecode equals" vertP_Tx_encodeDecode
+        , testCase "vert_P_N_Tx sizeOf == 32" vertP_N_Tx_sizeOf
+        , testCase "Vert_P_N_Tx alignment == 4" vertP_N_Tx_alignment
+        , testCase "vertP_N_Tx_encodeDecode equals" vertP_N_Tx_encodeDecode
         ]
     ]
