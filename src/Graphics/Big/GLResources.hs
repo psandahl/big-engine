@@ -16,6 +16,8 @@ module Graphics.Big.GLResources
     , genFramebuffer
     , deleteFramebuffer
     , genTexture
+    , bindTexture2D
+    , disableTexture2D
     , deleteTexture
     , genVertexArray
     , deleteVertexArray
@@ -56,6 +58,14 @@ deleteFramebuffer (Framebuffer buffer) = delName GL.glDeleteFramebuffers buffer
 
 genTexture :: MonadIO m => m Texture
 genTexture = Texture <$> genName GL.glGenTextures
+
+bindTexture2D :: MonadIO m => Int -> Texture -> m ()
+bindTexture2D unit (Texture texture) = do
+    GL.glActiveTexture $ GL.GL_TEXTURE0 + fromIntegral unit
+    GL.glBindTexture GL.GL_TEXTURE_2D texture
+
+disableTexture2D :: MonadIO m => m ()
+disableTexture2D = GL.glBindTexture GL.GL_TEXTURE_2D 0
 
 deleteTexture :: MonadIO m => Texture -> m ()
 deleteTexture (Texture texture) = delName GL.glDeleteTextures texture

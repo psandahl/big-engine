@@ -21,6 +21,9 @@ module Graphics.Big
     , putAppState
     , modifyAppState
     , setWindowSizeCallback
+    , bindTexture2D
+    , disableTexture2D
+    , deleteTexture
     , module Graphics.Big.Mesh
     , module Graphics.Big.Program
     , module Graphics.Big.TextureLoader
@@ -33,6 +36,8 @@ import           Graphics.Big.Callback      (initCallbacks)
 import           Graphics.Big.Configuration (Configuration (..),
                                              DisplayMode (..))
 import           Graphics.Big.Display       (initDisplay, renderLoop)
+import           Graphics.Big.GLResources   (bindTexture2D, deleteTexture,
+                                             disableTexture2D)
 import           Graphics.Big.Mesh
 import           Graphics.Big.Program
 import           Graphics.Big.Render        (Render, RenderState (..),
