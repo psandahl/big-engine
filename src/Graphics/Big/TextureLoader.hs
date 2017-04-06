@@ -10,6 +10,8 @@ module Graphics.Big.TextureLoader
     ( TextureParameters (..)
     , defaultTextureParameters
     , texture2DFromFile
+    , readImageRGB8
+    , readImageRGB8A
     ) where
 
 import           Codec.Picture
@@ -36,7 +38,7 @@ data TextureParameters = TextureParameters
     } deriving Show
 
 -- | Default values for the texture parameters. The 'TextureFormat' is set to
--- RGB8, and the other values are set to OpenGL's initial values.
+-- RGB8, and the other values are set to resonable defaults.
 defaultTextureParameters :: TextureParameters
 defaultTextureParameters =
     TextureParameters
