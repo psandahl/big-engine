@@ -60,16 +60,16 @@ texture2DFromFile file params = do
     eResult <- load2D file (format params)
     case eResult of
         Right () -> do
-            when (genMipmaps params) $
-                GL.glGenerateMipmap GL.GL_TEXTURE_2D
+            --when (genMipmaps params) $
+            --    GL.glGenerateMipmap GL.GL_TEXTURE_2D
 
-            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint $ wrapS params)
-            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint $ wrapT params)
-            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint $ minFilter params)
-            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint $ magFilter params)
-            GL.glTexParameterf GL.GL_TEXTURE_2D GL.GL_TEXTURE_LOD_BIAS (lodBias params)
+            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint $ wrapS params)
+            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint $ wrapT params)
+            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint $ minFilter params)
+            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint $ magFilter params)
+            --GL.glTexParameterf GL.GL_TEXTURE_2D GL.GL_TEXTURE_LOD_BIAS (lodBias params)
 
-            GL.glBindTexture GL.GL_TEXTURE_2D 0
+            --GL.glBindTexture GL.GL_TEXTURE_2D 0
             return $ Right tex
 
         Left err -> do

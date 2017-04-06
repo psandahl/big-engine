@@ -139,6 +139,10 @@ newtype VertexArray = VertexArray GLuint
 class Uniform a where
     setUniform :: MonadIO m => Location -> a -> m ()
 
+-- | Uniform instance for GLint.
+instance Uniform GLint where
+    setUniform (Location loc) = GL.glUniform1i loc
+
 -- | Uniform instance for GLfloat.
 instance Uniform GLfloat where
     setUniform (Location loc) = GL.glUniform1f loc
