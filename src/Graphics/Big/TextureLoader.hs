@@ -60,16 +60,16 @@ texture2DFromFile file params = do
     eResult <- load2D file (format params)
     case eResult of
         Right () -> do
-            --when (genMipmaps params) $
-            --    GL.glGenerateMipmap GL.GL_TEXTURE_2D
+            when (genMipmaps params) $
+                GL.glGenerateMipmap GL.GL_TEXTURE_2D
 
-            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint $ wrapS params)
-            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint $ wrapT params)
-            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint $ minFilter params)
-            --GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint $ magFilter params)
-            --GL.glTexParameterf GL.GL_TEXTURE_2D GL.GL_TEXTURE_LOD_BIAS (lodBias params)
+            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint $ wrapS params)
+            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint $ wrapT params)
+            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint $ minFilter params)
+            GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint $ magFilter params)
+            GL.glTexParameterf GL.GL_TEXTURE_2D GL.GL_TEXTURE_LOD_BIAS (lodBias params)
 
-            --GL.glBindTexture GL.GL_TEXTURE_2D 0
+            GL.glBindTexture GL.GL_TEXTURE_2D 0
             return $ Right tex
 
         Left err -> do
@@ -99,15 +99,15 @@ readImageRGB8A file = fmap convertRGBA8 <$> liftIO (readImage file)
 setTexture2DRGB8 :: MonadIO m => Image PixelRGB8 -> m ()
 setTexture2DRGB8 image = liftIO $
     Vector.unsafeWith (imageData image) $
-        GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB8)
+        GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB)
                         (fromIntegral $ imageWidth image)
                         (fromIntegral $ imageHeight image) 0
-                        GL.GL_RGB8 GL.GL_UNSIGNED_BYTE
+                        GL.GL_RGB GL.GL_UNSIGNED_BYTE
 
 setTexture2DRGBA8 :: MonadIO m => Image PixelRGBA8 -> m ()
 setTexture2DRGBA8 image = liftIO $
     Vector.unsafeWith (imageData image) $
-        GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGBA8)
+        GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGBA)
                         (fromIntegral $ imageWidth image)
                         (fromIntegral $ imageHeight image) 0
-                        GL.GL_RGBA8 GL.GL_UNSIGNED_BYTE
+                        GL.GL_RGBA GL.GL_UNSIGNED_BYTE
