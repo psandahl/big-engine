@@ -1,12 +1,12 @@
 -- |
--- Module: Graphics.Big.TextureLoader
+-- Module: BigE.TextureLoader
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.TextureLoader
+module BigE.TextureLoader
     ( TextureParameters (..)
     , defaultTextureParameters
     , texture2DFromFile
@@ -14,17 +14,17 @@ module Graphics.Big.TextureLoader
     , readImageRGB8A
     ) where
 
+import           BigE.Internal.GLResources (deleteTexture, genTexture)
+import           BigE.Types                (Texture (..), TextureFormat (..),
+                                            TextureMagFilter (..),
+                                            TextureMinFilter (..),
+                                            TextureWrap (..), ToGLint (..))
 import           Codec.Picture
-import           Control.Monad            (when)
-import           Control.Monad.IO.Class   (MonadIO, liftIO)
-import qualified Data.Vector.Storable     as Vector
-import           Graphics.Big.GLResources (deleteTexture, genTexture)
-import           Graphics.Big.Types       (Texture (..), TextureFormat (..),
-                                           TextureMagFilter (..),
-                                           TextureMinFilter (..),
-                                           TextureWrap (..), ToGLint (..))
-import           Graphics.GL              (GLfloat)
-import qualified Graphics.GL              as GL
+import           Control.Monad             (when)
+import           Control.Monad.IO.Class    (MonadIO, liftIO)
+import qualified Data.Vector.Storable      as Vector
+import           Graphics.GL               (GLfloat)
+import qualified Graphics.GL               as GL
 
 -- | User parameters for the loading of a 'Texture'.
 data TextureParameters = TextureParameters

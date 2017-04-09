@@ -1,25 +1,30 @@
 -- |
--- Module: Graphics.Big.Mesh.BufferHelper
+-- Module: BigE.Attribute
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Mesh.BufferHelper
-    ( allocBoundBuffers
+module BigE.Attribute
+    ( Attribute (..)
+    , allocBoundBuffers
     , fillBoundVBO
     , pointerOffset
     ) where
 
-import           Control.Monad.IO.Class   (MonadIO, liftIO)
-import           Data.Vector.Storable     (Vector)
-import qualified Data.Vector.Storable     as Vector
-import           Foreign                  (Ptr, Storable (..), nullPtr, plusPtr)
-import           Graphics.Big.GLResources (genBuffer, genVertexArray)
-import           Graphics.Big.Types       (Buffer (..), BufferUsage,
-                                           ToGLenum (..), VertexArray (..))
-import qualified Graphics.GL              as GL
+import           BigE.Internal.GLResources (genBuffer, genVertexArray)
+import           BigE.Types                (Buffer (..), BufferUsage,
+                                            ToGLenum (..), VertexArray (..))
+import           Control.Monad.IO.Class    (MonadIO, liftIO)
+import           Data.Vector.Storable      (Vector)
+import qualified Data.Vector.Storable      as Vector
+import           Foreign                   (Ptr, Storable (..), nullPtr,
+                                            plusPtr)
+import qualified Graphics.GL               as GL
+
+class Attribute a where
+    initAttributes :: MonadIO m => BufferUsage -> Vector a -> m (VertexArray, Buffer)
 
 -- | Allocate one VAO and one VBO. Bind both buffers before returning them.
 allocBoundBuffers :: MonadIO m => m (VertexArray, Buffer)

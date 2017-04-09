@@ -1,5 +1,5 @@
 -- |
--- Module: Graphics.Big
+-- Module: BigE.Runtime
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
@@ -8,54 +8,42 @@
 -- Language: Haskell2010
 --
 -- A Batteries Included Graphics Engine.
-module Graphics.Big
+module BigE.Runtime
     ( Configuration (..)
     , DisplayMode (..)
     , Render
     , WindowSizeCallback
-    , runEngine
-    , frameDuration
     , displayDimensions
+    , frameDuration
     , getAppState
     , getAppStateUnsafe
-    , putAppState
     , modifyAppState
+    , putAppState
+    , runRender
     , setWindowSizeCallback
-    , bindTexture2D
-    , disableTexture2D
-    , deleteTexture
-    , module Graphics.Big.Mesh
-    , module Graphics.Big.Program
-    , module Graphics.Big.TextureLoader
-    , module Graphics.Big.Types
+    , runBigE
     ) where
 
-import           Control.Monad              (void)
-import           Data.IORef                 (modifyIORef, newIORef)
-import           Graphics.Big.Callback      (initCallbacks)
-import           Graphics.Big.Configuration (Configuration (..),
+import           BigE.Runtime.Callback      (initCallbacks)
+import           BigE.Runtime.Configuration (Configuration (..),
                                              DisplayMode (..))
-import           Graphics.Big.Display       (initDisplay, renderLoop)
-import           Graphics.Big.GLResources   (bindTexture2D, deleteTexture,
-                                             disableTexture2D)
-import           Graphics.Big.Mesh
-import           Graphics.Big.Program
-import           Graphics.Big.Render        (Render, RenderState (..),
+import           BigE.Runtime.Display       (initDisplay, renderLoop)
+import           BigE.Runtime.Render        (Render, RenderState (..),
                                              WindowSizeCallback,
                                              displayDimensions, frameDuration,
                                              getAppState, getAppStateUnsafe,
                                              modifyAppState, putAppState,
                                              runRender, setWindowSizeCallback)
-import           Graphics.Big.TextureLoader
-import           Graphics.Big.Types
+import           Control.Monad              (void)
+import           Data.IORef                 (modifyIORef, newIORef)
 
 -- | Run the engine. Provided is the 'Configuration'. The application's
 -- setup return an initial state, if successful.
 -- The state will then be carried through all stages (animate, render and teardown).
 -- All stages, and all callbacks, are guaranteed to be performed in the
 -- same thread.
-runEngine :: Configuration app -> IO (Either String ())
-runEngine config = do
+runBigE :: Configuration app -> IO (Either String ())
+runBigE config = do
 
     -- Initalization stage, create the display according to configuration.
     eState <- initDisplay config

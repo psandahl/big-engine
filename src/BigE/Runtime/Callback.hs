@@ -1,17 +1,17 @@
 -- |
--- Module: Graphics.Big.Callback
+-- Module: BigE.Runtime.Callback
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Callback
+module BigE.Runtime.Callback
     ( initCallbacks
     ) where
 
+import           BigE.Runtime.Render (RenderState (..), runRender)
 import           Data.IORef          (IORef, modifyIORef, readIORef)
-import           Graphics.Big.Render (RenderState (..), runRender)
 import qualified Graphics.GL         as GL
 import           Graphics.UI.GLFW    (Window)
 import qualified Graphics.UI.GLFW    as GLFW

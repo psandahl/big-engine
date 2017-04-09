@@ -1,13 +1,13 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 -- |
--- Module: Graphics.Big.Render
+-- Module: BigE.Runtime.Render
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Render
+module BigE.Runtime.Render
     ( Render
     , RenderState (..)
     , WindowSizeCallback

@@ -1,24 +1,23 @@
 -- |
--- Module: Graphics.Big.Mesh.Vert_P
+-- Module: BigE.Attribute.Vert_P
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Mesh.Vert_P
+module BigE.Attribute.Vert_P
     ( Vertex (..)
     ) where
 
-import           Control.Monad                  (unless)
-import qualified Data.Vector.Storable           as Vector
-import           Foreign                        (Storable (..), castPtr)
-import           Graphics.Big.Mesh              (Attribute (..))
-import           Graphics.Big.Mesh.BufferHelper (allocBoundBuffers,
-                                                 fillBoundVBO, pointerOffset)
-import           Graphics.GL                    (GLfloat)
-import qualified Graphics.GL                    as GL
-import           Linear                         (V3 (..))
+import           BigE.Attribute       (Attribute (..), allocBoundBuffers,
+                                       fillBoundVBO, pointerOffset)
+import           Control.Monad        (unless)
+import qualified Data.Vector.Storable as Vector
+import           Foreign              (Storable (..), castPtr)
+import           Graphics.GL          (GLfloat)
+import qualified Graphics.GL          as GL
+import           Linear               (V3 (..))
 
 -- | A convenience definition of a vertex containing one attribute, the position.
 data Vertex = Vertex

@@ -31,21 +31,21 @@ test-suite big-engine-test
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Graphics.Big
-                       Graphics.Big.Mesh.Vert_P
-                       Graphics.Big.Mesh.Vert_P_C
-                       Graphics.Big.Mesh.Vert_P_Tx
-                       Graphics.Big.Mesh.Vert_P_N_Tx
-  other-modules:       Graphics.Big.Callback
-                       Graphics.Big.Configuration
-                       Graphics.Big.Display
-                       Graphics.Big.GLResources
-                       Graphics.Big.Mesh
-                       Graphics.Big.Mesh.BufferHelper
-                       Graphics.Big.Program
-                       Graphics.Big.Render
-                       Graphics.Big.TextureLoader
-                       Graphics.Big.Types
+  exposed-modules:     BigE.Attribute
+                       BigE.Attribute.Vert_P
+                       BigE.Attribute.Vert_P_C
+                       BigE.Attribute.Vert_P_Tx
+                       BigE.Attribute.Vert_P_N_Tx
+                       BigE.MeshLoader
+                       BigE.Runtime
+                       BigE.ProgramLoader
+                       BigE.TextureLoader
+                       BigE.Types
+  other-modules:       BigE.Internal.GLResources
+                       BigE.Runtime.Configuration
+                       BigE.Runtime.Callback
+                       BigE.Runtime.Display
+                       BigE.Runtime.Render
   build-depends:       base >= 4.7 && < 5
                      , bytestring
                      , GLFW-b

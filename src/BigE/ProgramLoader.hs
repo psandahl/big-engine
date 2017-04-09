@@ -1,11 +1,11 @@
--- Module: Graphics.Big.Program
+-- Module: BigE.ProgramLoader
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Program
+module BigE.ProgramLoader
     ( programFromByteStrings
     , deleteProgram
     , enableProgram
@@ -13,17 +13,17 @@ module Graphics.Big.Program
     , getUniformLocation
     ) where
 
-import           Control.Monad.IO.Class   (MonadIO, liftIO)
-import           Data.ByteString.Char8    (ByteString)
-import qualified Data.ByteString.Char8    as BS
-import           Foreign                  (Ptr, nullPtr, peek, with)
-import           Foreign.C                (peekCString, withCString)
-import qualified Graphics.Big.GLResources as GLResources
-import           Graphics.Big.Types       (Location (..), Program (..),
-                                           Shader (..), ShaderType (..))
-import           Graphics.GL              (GLboolean, GLchar, GLint, GLsizei,
-                                           GLuint)
-import qualified Graphics.GL              as GL
+import qualified BigE.Internal.GLResources as GLResources
+import           BigE.Types                (Location (..), Program (..),
+                                            Shader (..), ShaderType (..))
+import           Control.Monad.IO.Class    (MonadIO, liftIO)
+import           Data.ByteString.Char8     (ByteString)
+import qualified Data.ByteString.Char8     as BS
+import           Foreign                   (Ptr, nullPtr, peek, with)
+import           Foreign.C                 (peekCString, withCString)
+import           Graphics.GL               (GLboolean, GLchar, GLint, GLsizei,
+                                            GLuint)
+import qualified Graphics.GL               as GL
 
 -- | Compile and link the provided shader sources to a shader program.
 programFromByteStrings :: MonadIO m => [(ShaderType, FilePath, ByteString)]

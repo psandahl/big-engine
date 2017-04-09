@@ -1,23 +1,24 @@
 -- |
--- Module: Graphics.Big.Display
+-- Module: BigE.Runtime.Display
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Display
+module BigE.Runtime.Display
     ( initDisplay
     , renderLoop
     ) where
 
+import           BigE.Runtime.Configuration (Configuration (..),
+                                             DisplayMode (..))
+import           BigE.Runtime.Render        (RenderState (..), liftIO,
+                                             runRender)
 import           Control.Monad              (unless, void, when)
 import           Control.Monad.Except       (runExceptT, throwError)
 import           Data.IORef                 (IORef, modifyIORef, readIORef)
 import           Data.Maybe                 (isJust, isNothing)
-import           Graphics.Big.Configuration
-import           Graphics.Big.Render        (RenderState (..), liftIO,
-                                             runRender)
 import qualified Graphics.GL                as GL
 import           Graphics.UI.GLFW           (OpenGLProfile (..), VideoMode (..),
                                              Window, WindowHint (..))

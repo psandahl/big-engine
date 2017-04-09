@@ -1,12 +1,12 @@
 -- |
--- Module: Graphics.Big.Mesh
+-- Module: BigE.MeshLoader
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Mesh
+module BigE.MeshLoader
     ( Mesh
     , Attribute (..)
     , meshFromVectors
@@ -17,26 +17,24 @@ module Graphics.Big.Mesh
     , renderMesh
     ) where
 
-import           Control.Monad            (unless)
-import           Control.Monad.IO.Class   (MonadIO, liftIO)
-import           Data.Vector.Storable     (Vector)
-import qualified Data.Vector.Storable     as Vector
-import           Foreign                  (Storable (..))
-import           Graphics.Big.GLResources (deleteVertexArray)
-import           Graphics.Big.Types       (Buffer (..), BufferUsage,
-                                           Primitive (..), ToGLenum (..),
-                                           VertexArray (..))
-import           Graphics.GL              (GLuint)
-import qualified Graphics.GL              as GL
+import           BigE.Attribute            (Attribute (..))
+import           BigE.Internal.GLResources (deleteVertexArray)
+import           BigE.Types                (Buffer (..), BufferUsage,
+                                            Primitive (..), ToGLenum (..),
+                                            VertexArray (..))
+import           Control.Monad             (unless)
+import           Control.Monad.IO.Class    (MonadIO, liftIO)
+import           Data.Vector.Storable      (Vector)
+import qualified Data.Vector.Storable      as Vector
+import           Foreign                   (Storable (..))
+import           Graphics.GL               (GLuint)
+import qualified Graphics.GL               as GL
 
 data Mesh = Mesh
     { vao     :: !VertexArray
     , vbo     :: !Buffer
     , indices :: !(Vector GLuint)
     } deriving Show
-
-class Attribute a where
-    initAttributes :: MonadIO m => BufferUsage -> Vector a -> m (VertexArray, Buffer)
 
 -- | Build a 'Mesh' from vectors with vertex attribute data and index data.
 meshFromVectors :: (Attribute a, MonadIO m)

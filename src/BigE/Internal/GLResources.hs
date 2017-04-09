@@ -1,12 +1,12 @@
 -- |
--- Module: Graphics.Big.GLResources
+-- Module: BigE.Internal.GLResources
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.GLResources
+module BigE.Internal.GLResources
     ( createShader
     , deleteShader
     , createProgram
@@ -23,12 +23,12 @@ module Graphics.Big.GLResources
     , deleteVertexArray
     ) where
 
-import           Control.Monad.IO.Class (MonadIO, liftIO)
-import           Foreign
-import           Graphics.Big.Types     (Buffer (..), Framebuffer (..),
+import           BigE.Types             (Buffer (..), Framebuffer (..),
                                          Program (..), Shader (..), ShaderType,
                                          Texture (..), ToGLenum (..),
                                          VertexArray (..))
+import           Control.Monad.IO.Class (MonadIO, liftIO)
+import           Foreign
 import           Graphics.GL            (GLsizei, GLuint)
 import qualified Graphics.GL            as GL
 

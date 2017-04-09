@@ -1,14 +1,14 @@
 {-# LANGUAGE FlexibleInstances    #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 -- |
--- Module: Graphics.Big.Types
+-- Module: BigE.Types
 -- Copyright: (c) 2017 Patrik Sandahl
 -- Licence: MIT
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
 -- Language: Haskell2010
-module Graphics.Big.Types
+module BigE.Types
     ( ToGLenum (..)
     , ToGLint (..)
     , BufferTarget (..)
