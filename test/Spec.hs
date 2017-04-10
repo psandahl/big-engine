@@ -3,6 +3,7 @@ module Main where
 import           Test.Framework                 (Test, defaultMain, testGroup)
 import           Test.Framework.Providers.HUnit (testCase)
 
+import           MathTests
 import           VertexTests
 
 main :: IO ()
@@ -23,5 +24,9 @@ testSuite =
         , testCase "vert_P_N_Tx sizeOf == 32" vertP_N_Tx_sizeOf
         , testCase "Vert_P_N_Tx alignment == 4" vertP_N_Tx_alignment
         , testCase "vertP_N_Tx_encodeDecode equals" vertP_N_Tx_encodeDecode
+        ]
+    , testGroup "Math tests - angle conversions"
+        [ testCase "Conversion to radians " toRadiansConversion
+        , testCase "Conversion to degrees" toDegreesConversion
         ]
     ]
