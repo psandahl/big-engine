@@ -39,10 +39,10 @@ library
                        BigE.Attribute.Vert_P_Tx
                        BigE.Attribute.Vert_P_N_Tx
                        BigE.Math
-                       BigE.MeshLoader
+                       BigE.Mesh
                        BigE.Runtime
-                       BigE.ProgramLoader
-                       BigE.TextureLoader
+                       BigE.Program
+                       BigE.Texture
                        BigE.Types
   other-modules:       BigE.Internal.GLResources
                        BigE.Runtime.Configuration
@@ -58,7 +58,7 @@ library
                      , OpenGLRaw
                      , vector
   default-language:    Haskell2010
-  ghc-options:         -Wall
+  ghc-options:         -Wall -Werror
 
 source-repository head
   type:     git
