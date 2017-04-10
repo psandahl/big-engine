@@ -6,16 +6,18 @@
 -- Portability: portable
 -- Language: Haskell2010
 module BigE.ProgramLoader
-    ( programFromByteStrings
-    , deleteProgram
-    , enableProgram
-    , disableProgram
+    ( fromByteString
+    , fromFile
+    , delete
+    , enable
+    , disable
     , getUniformLocation
     ) where
 
 import qualified BigE.Internal.GLResources as GLResources
 import           BigE.Types                (Location (..), Program (..),
                                             Shader (..), ShaderType (..))
+import           Control.Exception         (SomeException, try)
 import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import           Data.ByteString.Char8     (ByteString)
 import qualified Data.ByteString.Char8     as BS
@@ -25,26 +27,39 @@ import           Graphics.GL               (GLboolean, GLchar, GLint, GLsizei,
                                             GLuint)
 import qualified Graphics.GL               as GL
 
--- | Compile and link the provided shader sources to a shader program.
-programFromByteStrings :: MonadIO m => [(ShaderType, FilePath, ByteString)]
-                       -> m (Either String Program)
-programFromByteStrings xs = do
+-- | Compile and link the provided shader sources to a program.
+fromByteString :: MonadIO m => [(ShaderType, FilePath, ByteString)]
+               -> m (Either String Program)
+fromByteString xs = do
     eShaders <- sequence <$> mapM compileShader xs
     case eShaders of
         Right shaders -> linkShaders shaders
         Left err      -> return $ Left err
 
+-- | Compile and link the provided shader sources to a program.
+fromFile :: MonadIO m => [(ShaderType, FilePath)] -> m (Either String Program)
+fromFile xs = do
+    eByteStrings <- sequence <$> mapM (tryReadFile . snd) xs
+    case eByteStrings of
+        Right byteStrings -> fromByteString $ combine xs byteStrings
+        Left err          -> return $ Left (show err)
+    where
+        combine = zipWith (\(s, p) bs -> (s, p, bs))
+
+tryReadFile :: MonadIO m => FilePath -> m (Either SomeException ByteString)
+tryReadFile file = liftIO $ try (BS.readFile file)
+
 -- | Delete the shader program.
-deleteProgram :: MonadIO m => Program -> m ()
-deleteProgram = GLResources.deleteProgram
+delete :: MonadIO m => Program -> m ()
+delete = GLResources.deleteProgram
 
 -- | Enable the program to become current.
-enableProgram :: MonadIO m => Program -> m ()
-enableProgram (Program program) = GL.glUseProgram program
+enable :: MonadIO m => Program -> m ()
+enable (Program program) = GL.glUseProgram program
 
 -- | Disable the current program.
-disableProgram :: MonadIO m => m ()
-disableProgram = GL.glUseProgram 0
+disable :: MonadIO m => m ()
+disable = GL.glUseProgram 0
 
 -- | Get the named uniform location.
 getUniformLocation :: MonadIO m => Program -> String -> m Location
@@ -81,7 +96,7 @@ linkShaders shaders = do
         else do
             errLog <- getInfoLog handle GL.glGetProgramInfoLog
             mapM_ GLResources.deleteShader shaders
-            deleteProgram program
+            delete program
             return $ Left errLog
 
 -- | Set the shader source code.

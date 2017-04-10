@@ -13,14 +13,14 @@ module VertexTests
     , vertP_N_Tx_encodeDecode
     ) where
 
-import           Foreign                       (Storable (..), peek, with)
-import           Linear                        (V2 (..), V3 (..), V4 (..))
+import           Foreign                    (Storable (..), peek, with)
+import           Linear                     (V2 (..), V3 (..), V4 (..))
 import           Test.HUnit
 
-import qualified Graphics.Big.Mesh.Vert_P      as Vert_P
-import qualified Graphics.Big.Mesh.Vert_P_C    as Vert_P_C
-import qualified Graphics.Big.Mesh.Vert_P_N_Tx as Vert_P_N_Tx
-import qualified Graphics.Big.Mesh.Vert_P_Tx   as Vert_P_Tx
+import qualified BigE.Attribute.Vert_P      as Vert_P
+import qualified BigE.Attribute.Vert_P_C    as Vert_P_C
+import qualified BigE.Attribute.Vert_P_N_Tx as Vert_P_N_Tx
+import qualified BigE.Attribute.Vert_P_Tx   as Vert_P_Tx
 
 vertP_sizeOf :: Assertion
 vertP_sizeOf = 12 @=? sizeOf sampleVertP

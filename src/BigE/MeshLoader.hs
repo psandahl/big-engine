@@ -9,12 +9,12 @@
 module BigE.MeshLoader
     ( Mesh
     , Attribute (..)
-    , meshFromVectors
-    , updateMesh
-    , enableMesh
-    , disableMesh
-    , deleteMesh
-    , renderMesh
+    , fromVector
+    , update
+    , enable
+    , disable
+    , delete
+    , render
     ) where
 
 import           BigE.Attribute            (Attribute (..))
@@ -37,15 +37,15 @@ data Mesh = Mesh
     } deriving Show
 
 -- | Build a 'Mesh' from vectors with vertex attribute data and index data.
-meshFromVectors :: (Attribute a, MonadIO m)
+fromVector :: (Attribute a, MonadIO m)
                 => BufferUsage -> Vector a -> Vector GLuint -> m Mesh
-meshFromVectors bufferUsage vertices indices' = do
+fromVector bufferUsage vertices indices' = do
     (vao', vbo') <- initAttributes bufferUsage vertices
     return Mesh { vao = vao', vbo = vbo', indices = indices' }
 
--- | Replace the entire content of the mesh.
-updateMesh :: (Storable a, MonadIO m) => Vector a -> Vector GLuint -> Mesh -> m Mesh
-updateMesh vertices indices' mesh = do
+-- | Replace the entire content of the mesh. The new mesh is returned.
+update :: (Storable a, MonadIO m) => Vector a -> Vector GLuint -> Mesh -> m Mesh
+update vertices indices' mesh = do
     unless (Vector.null vertices) $ do
         let Buffer handle = vbo mesh
         GL.glBindBuffer GL.GL_ARRAY_BUFFER handle
@@ -61,22 +61,22 @@ updateMesh vertices indices' mesh = do
     return $ mesh { indices = indices' }
 
 -- | Enable the mesh's 'VertexArray'.
-enableMesh :: MonadIO m => Mesh -> m ()
-enableMesh mesh = do
+enable :: MonadIO m => Mesh -> m ()
+enable mesh = do
     let VertexArray handle = vao mesh
     GL.glBindVertexArray handle
 
 -- | Disable the current 'VertexArray'.
-disableMesh :: MonadIO m => m ()
-disableMesh = GL.glBindVertexArray 0
+disable :: MonadIO m => m ()
+disable = GL.glBindVertexArray 0
 
 -- | Delete the mesh's 'VertexArray'. The mesh cannot be used any longer.
-deleteMesh :: MonadIO m => Mesh -> m ()
-deleteMesh = deleteVertexArray . vao
+delete :: MonadIO m => Mesh -> m ()
+delete = deleteVertexArray . vao
 
--- | Render the mesh.
-renderMesh :: MonadIO m => Primitive -> Mesh -> m ()
-renderMesh primitive mesh = liftIO $
+-- | Render the mesh using indexed rendering (glDrawElements)
+render :: MonadIO m => Primitive -> Mesh -> m ()
+render primitive mesh = liftIO $
     Vector.unsafeWith (indices mesh) $ \ptr -> do
         let len = Vector.length (indices mesh)
         GL.glDrawElements (toGLenum primitive) (fromIntegral len)
