@@ -8,8 +8,10 @@
 -- Language: Haskell2010
 module BigE.Texture
     ( TextureParameters (..)
+    , CubeMapFiles (..)
     , defaultTextureParameters
     , fromFile2D
+    , fromFileCube
     , enable2D
     , disable2D
     , delete
@@ -26,7 +28,7 @@ import           Codec.Picture
 import           Control.Monad             (when)
 import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import qualified Data.Vector.Storable      as Vector
-import           Graphics.GL               (GLfloat)
+import           Graphics.GL               (GLenum, GLfloat)
 import qualified Graphics.GL               as GL
 
 -- | User parameters for the loading of a 'Texture'.
@@ -38,6 +40,16 @@ data TextureParameters = TextureParameters
     , minFilter  :: !TextureMinFilter
     , magFilter  :: !TextureMagFilter
     , lodBias    :: !GLfloat
+    } deriving Show
+
+-- | The six files for the cube map faces.
+data CubeMapFiles = CubeMapFiles
+    { negativeX :: !FilePath
+    , positiveX :: !FilePath
+    , negativeY :: !FilePath
+    , positiveY :: !FilePath
+    , negativeZ :: !FilePath
+    , positiveZ :: !FilePath
     } deriving Show
 
 -- | Default values for the texture parameters. The 'TextureFormat' is set to
@@ -62,7 +74,7 @@ fromFile2D file params = do
     tex@(Texture handle) <- genTexture
     GL.glBindTexture GL.GL_TEXTURE_2D handle
 
-    eResult <- load2D file (format params)
+    eResult <- load2D GL.GL_TEXTURE_2D file (format params)
     case eResult of
         Right () -> do
             when (genMipmaps params) $
@@ -82,14 +94,21 @@ fromFile2D file params = do
             deleteTexture tex
             return $ Left err
 
+-- | Load a cube map texture from a set of six files.
+fromFileCube :: MonadIO m => CubeMapFiles -> m (Either String Texture)
+fromFileCube = undefined
+
+-- | Enable the 2D texture at the given texture unit.
 enable2D :: MonadIO m => Int -> Texture -> m ()
 enable2D unit (Texture texture) = do
     GL.glActiveTexture $ GL.GL_TEXTURE0 + fromIntegral unit
     GL.glBindTexture GL.GL_TEXTURE_2D texture
 
+-- | Disable the 2D texture at the currently bound texture unit.
 disable2D :: MonadIO m => m ()
 disable2D = GL.glBindTexture GL.GL_TEXTURE_2D 0
 
+-- | Delete the given texture.
 delete :: MonadIO m => Texture -> m ()
 delete = deleteTexture
 
@@ -99,31 +118,31 @@ readImageRGB8 file = fmap convertRGB8 <$> liftIO (readImage file)
 readImageRGB8A :: MonadIO m => FilePath -> m (Either String (Image PixelRGBA8))
 readImageRGB8A file = fmap convertRGBA8 <$> liftIO (readImage file)
 
-load2D :: MonadIO m => FilePath -> TextureFormat -> m (Either String ())
-load2D file RGB8 = do
+load2D :: MonadIO m => GLenum -> FilePath -> TextureFormat -> m (Either String ())
+load2D target file RGB8 = do
     eImage <- readImageRGB8 file
     case eImage of
-        Right image -> Right <$> setTexture2DRGB8 image
+        Right image -> Right <$> (setTexture2DRGB8 target image)
         Left err    -> return $ Left err
 
-load2D file RGBA8 = do
+load2D target file RGBA8 = do
     eImage <- readImageRGB8A file
     case eImage of
-        Right image -> Right <$> setTexture2DRGBA8 image
+        Right image -> Right <$> (setTexture2DRGBA8 target image)
         Left err    -> return $ Left err
 
-setTexture2DRGB8 :: MonadIO m => Image PixelRGB8 -> m ()
-setTexture2DRGB8 image = liftIO $
+setTexture2DRGB8 :: MonadIO m => GLenum -> Image PixelRGB8 -> m ()
+setTexture2DRGB8 target image = liftIO $
     Vector.unsafeWith (imageData image) $
-        GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB)
+        GL.glTexImage2D target 0 (fromIntegral GL.GL_RGB)
                         (fromIntegral $ imageWidth image)
                         (fromIntegral $ imageHeight image) 0
                         GL.GL_RGB GL.GL_UNSIGNED_BYTE
 
-setTexture2DRGBA8 :: MonadIO m => Image PixelRGBA8 -> m ()
-setTexture2DRGBA8 image = liftIO $
+setTexture2DRGBA8 :: MonadIO m => GLenum -> Image PixelRGBA8 -> m ()
+setTexture2DRGBA8 target image = liftIO $
     Vector.unsafeWith (imageData image) $
-        GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGBA)
+        GL.glTexImage2D target 0 (fromIntegral GL.GL_RGBA)
                         (fromIntegral $ imageWidth image)
                         (fromIntegral $ imageHeight image) 0
                         GL.GL_RGBA GL.GL_UNSIGNED_BYTE
