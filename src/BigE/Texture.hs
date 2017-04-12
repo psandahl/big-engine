@@ -9,11 +9,14 @@
 module BigE.Texture
     ( TextureParameters (..)
     , CubeMapFiles (..)
-    , defaultTextureParameters
+    , defaultParams2D
+    , defaultParamsCube
     , fromFile2D
     , fromFileCube
     , enable2D
     , disable2D
+    , enableCube
+    , disableCube
     , delete
     , readImageRGB8
     , readImageRGB8A
@@ -25,6 +28,7 @@ import           BigE.Types                (Texture (..), TextureFormat (..),
                                             TextureMinFilter (..),
                                             TextureWrap (..), ToGLint (..))
 import           Codec.Picture
+import           Control.Monad             (forM)
 import           Control.Monad             (when)
 import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import qualified Data.Vector.Storable      as Vector
@@ -52,16 +56,29 @@ data CubeMapFiles = CubeMapFiles
     , positiveZ :: !FilePath
     } deriving Show
 
--- | Default values for the texture parameters. The 'TextureFormat' is set to
+-- | Default values for 2D texture parameters. The 'TextureFormat' is set to
 -- RGB8, and the other values are set to resonable defaults.
-defaultTextureParameters :: TextureParameters
-defaultTextureParameters =
+defaultParams2D :: TextureParameters
+defaultParams2D =
     TextureParameters
         { format = RGB8
         , genMipmaps = True
         , wrapS = WrapRepeat
         , wrapT = WrapRepeat
         , minFilter = MinNearestMipmapLinear
+        , magFilter = MagLinear
+        , lodBias = 0
+        }
+
+-- | Default values for cube texture parameters.
+defaultParamsCube :: TextureParameters
+defaultParamsCube =
+    TextureParameters
+        { format = RGB8
+        , genMipmaps = False
+        , wrapS = WrapClampToBorder
+        , wrapT = WrapClampToBorder
+        , minFilter = MinLinear
         , magFilter = MagLinear
         , lodBias = 0
         }
@@ -95,8 +112,40 @@ fromFile2D file params = do
             return $ Left err
 
 -- | Load a cube map texture from a set of six files.
-fromFileCube :: MonadIO m => CubeMapFiles -> m (Either String Texture)
-fromFileCube = undefined
+fromFileCube :: MonadIO m => CubeMapFiles -> TextureParameters -> m (Either String Texture)
+fromFileCube files params = do
+    tex@(Texture handle) <- genTexture
+    GL.glBindTexture GL.GL_TEXTURE_CUBE_MAP handle
+
+    let xs = [ (negativeX files, GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_X)
+             , (positiveX files, GL.GL_TEXTURE_CUBE_MAP_POSITIVE_X)
+             , (negativeY files, GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Y)
+             , (positiveY files, GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Y)
+             , (negativeZ files, GL.GL_TEXTURE_CUBE_MAP_NEGATIVE_Z)
+             , (positiveZ files, GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Z)
+             ]
+    eResult <- sequence <$>
+        ( forM xs $ \(path, target) ->
+            load2D target path (format params)
+        )
+    case eResult of
+        Right _  -> do
+            when (genMipmaps params) $
+                GL.glGenerateMipmap GL.GL_TEXTURE_CUBE_MAP
+
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_WRAP_S (toGLint $ wrapS params)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_WRAP_T (toGLint $ wrapT params)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_MIN_FILTER (toGLint $ minFilter params)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_MAG_FILTER (toGLint $ magFilter params)
+            GL.glTexParameterf GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_LOD_BIAS (lodBias params)
+
+            GL.glBindTexture GL.GL_TEXTURE_2D 0
+            return $ Right tex
+
+        Left err -> do
+            GL.glBindTexture GL.GL_TEXTURE_CUBE_MAP 0
+            deleteTexture tex
+            return $ Left err
 
 -- | Enable the 2D texture at the given texture unit.
 enable2D :: MonadIO m => Int -> Texture -> m ()
@@ -104,9 +153,23 @@ enable2D unit (Texture texture) = do
     GL.glActiveTexture $ GL.GL_TEXTURE0 + fromIntegral unit
     GL.glBindTexture GL.GL_TEXTURE_2D texture
 
--- | Disable the 2D texture at the currently bound texture unit.
-disable2D :: MonadIO m => m ()
-disable2D = GL.glBindTexture GL.GL_TEXTURE_2D 0
+-- | Disable the 2D texture at the given texture unit.
+disable2D :: MonadIO m => Int -> m ()
+disable2D unit = do
+    GL.glActiveTexture $ GL.GL_TEXTURE0 + fromIntegral unit
+    GL.glBindTexture GL.GL_TEXTURE_2D 0
+
+-- | Enable the cube map texture at the given texture unit.
+enableCube :: MonadIO m => Int -> Texture -> m ()
+enableCube unit (Texture texture) = do
+    GL.glActiveTexture $ GL.GL_TEXTURE0 + fromIntegral unit
+    GL.glBindTexture GL.GL_TEXTURE_CUBE_MAP texture
+
+-- | Disable the cube map texture at the given texture unit.
+disableCube :: MonadIO m => Int -> m ()
+disableCube unit = do
+    GL.glActiveTexture $ GL.GL_TEXTURE0 + fromIntegral unit
+    GL.glBindTexture GL.GL_TEXTURE_CUBE_MAP 0
 
 -- | Delete the given texture.
 delete :: MonadIO m => Texture -> m ()
