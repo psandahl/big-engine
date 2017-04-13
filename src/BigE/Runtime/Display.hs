@@ -77,6 +77,9 @@ initDisplay config = runExceptT $ do
         , lastTime = 0
         , duration = 0
         , appWindowSizeCallback = Nothing
+        , appKeyPressedCallback = Nothing
+        , appKeyReleasedCallback = Nothing
+        , appKeyRepeatingCallback = Nothing
         , appState = Nothing
         }
 

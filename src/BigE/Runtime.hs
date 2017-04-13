@@ -11,8 +11,13 @@
 module BigE.Runtime
     ( Configuration (..)
     , DisplayMode (..)
+    , Key (..)
+    , ModifierKeys (..)
     , Render
     , WindowSizeCallback
+    , KeyPressedCallback
+    , KeyReleasedCallback
+    , KeyRepeatingCallback
     , displayDimensions
     , frameDuration
     , getAppState
@@ -21,6 +26,9 @@ module BigE.Runtime
     , putAppState
     , runRender
     , setWindowSizeCallback
+    , setKeyPressedCallback
+    , setKeyReleasedCallback
+    , setKeyRepeatingCallback
     , runBigE
     ) where
 
@@ -28,12 +36,19 @@ import           BigE.Runtime.Callback      (initCallbacks)
 import           BigE.Runtime.Configuration (Configuration (..),
                                              DisplayMode (..))
 import           BigE.Runtime.Display       (initDisplay, renderLoop)
-import           BigE.Runtime.Render        (Render, RenderState (..),
+import           BigE.Runtime.Render        (Key (..), KeyPressedCallback,
+                                             KeyReleasedCallback,
+                                             KeyRepeatingCallback,
+                                             ModifierKeys (..), Render,
+                                             RenderState (..),
                                              WindowSizeCallback,
                                              displayDimensions, frameDuration,
                                              getAppState, getAppStateUnsafe,
                                              modifyAppState, putAppState,
-                                             runRender, setWindowSizeCallback)
+                                             runRender, setKeyPressedCallback,
+                                             setKeyReleasedCallback,
+                                             setKeyRepeatingCallback,
+                                             setWindowSizeCallback)
 import           Control.Monad              (void)
 import           Data.IORef                 (modifyIORef, newIORef)
 

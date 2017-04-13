@@ -10,7 +10,12 @@
 module BigE.Runtime.Render
     ( Render
     , RenderState (..)
+    , Key (..)
+    , ModifierKeys (..)
     , WindowSizeCallback
+    , KeyPressedCallback
+    , KeyReleasedCallback
+    , KeyRepeatingCallback
     , runRender
     , frameDuration
     , displayDimensions
@@ -19,6 +24,9 @@ module BigE.Runtime.Render
     , putAppState
     , modifyAppState
     , setWindowSizeCallback
+    , setKeyPressedCallback
+    , setKeyRepeatingCallback
+    , setKeyReleasedCallback
     , liftIO
     ) where
 
@@ -26,28 +34,40 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (MonadReader, ReaderT, ask, runReaderT)
 import           Data.IORef             (IORef, modifyIORef, readIORef)
 import           Data.Maybe             (fromJust)
-import           Graphics.UI.GLFW       (Window)
+import           Graphics.UI.GLFW       (Key (..), ModifierKeys (..), Window)
 
 type WindowSizeCallback app = Int -> Int -> Render app ()
+type KeyPressedCallback app = Key -> ModifierKeys -> Render app ()
+type KeyRepeatingCallback app = Key -> ModifierKeys -> Render app ()
+type KeyReleasedCallback app = Key -> ModifierKeys -> Render app ()
 
 -- | BigEngine's internal render state.
 data RenderState app = RenderState
-    { window                :: !Window
+    { window                  :: !Window
       -- ^ The GLFW window.
 
-    , dimensions            :: !(Int, Int)
+    , dimensions              :: !(Int, Int)
       -- ^ The current dimensions for the window (width, height).
 
-    , lastTime              :: !Double
+    , lastTime                :: !Double
       -- ^ Last taken timestamp value.
 
-    , duration              :: !Double
+    , duration                :: !Double
       -- ^ The duration in (fractional) seconds since previous frame.
 
-    , appWindowSizeCallback :: !(Maybe (WindowSizeCallback app))
+    , appWindowSizeCallback   :: !(Maybe (WindowSizeCallback app))
       -- ^ The application's window size change callback.
 
-    , appState              :: !(Maybe app)
+    , appKeyPressedCallback   :: !(Maybe (KeyPressedCallback app))
+      -- ^ The application's key pressed callback.
+
+    , appKeyRepeatingCallback :: !(Maybe (KeyRepeatingCallback app))
+      -- ^ The application's key repeating callback.
+
+    , appKeyReleasedCallback  :: !(Maybe (KeyReleasedCallback app))
+      -- ^ The application's key released callback.
+
+    , appState                :: !(Maybe app)
       -- ^ The user provided application state.
     }
 
@@ -95,6 +115,24 @@ setWindowSizeCallback :: Maybe (WindowSizeCallback app) -> Render app ()
 setWindowSizeCallback val = do
     ref <- ask
     modifyIORef' ref $ \state -> state { appWindowSizeCallback = val }
+
+-- | Set (or unset) the 'KeyPressedCallback'.
+setKeyPressedCallback :: Maybe (KeyPressedCallback app) -> Render app ()
+setKeyPressedCallback val = do
+    ref <- ask
+    modifyIORef' ref $ \state -> state { appKeyPressedCallback = val }
+
+-- | Set (or unset) the 'KeyRepeatingCallback'.
+setKeyRepeatingCallback :: Maybe (KeyRepeatingCallback app) -> Render app ()
+setKeyRepeatingCallback val = do
+    ref <- ask
+    modifyIORef' ref $ \state -> state { appKeyRepeatingCallback = val }
+
+-- | Set (or unset) the 'KeyReleasedCallback'.
+setKeyReleasedCallback :: Maybe (KeyReleasedCallback app) -> Render app ()
+setKeyReleasedCallback val = do
+    ref <- ask
+    modifyIORef' ref $ \state -> state { appKeyReleasedCallback = val }
 
 readIORef' :: IORef (RenderState app) -> Render app (RenderState app)
 readIORef' = liftIO . readIORef
