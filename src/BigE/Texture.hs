@@ -10,7 +10,6 @@ module BigE.Texture
     ( TextureParameters (..)
     , CubeMapFiles (..)
     , defaultParams2D
-    , defaultParamsCube
     , fromFile2D
     , fromFileCube
     , enable2D
@@ -70,19 +69,6 @@ defaultParams2D =
         , lodBias = 0
         }
 
--- | Default values for cube texture parameters.
-defaultParamsCube :: TextureParameters
-defaultParamsCube =
-    TextureParameters
-        { format = RGB8
-        , genMipmaps = False
-        , wrapS = WrapClampToBorder
-        , wrapT = WrapClampToBorder
-        , minFilter = MinLinear
-        , magFilter = MagLinear
-        , lodBias = 0
-        }
-
 -- | Load a 2D texture from file, using the given 'TextureParameters'. The textures
 -- loaded from this function must be "turned up side down" in the fragment
 -- shader by flipping the T value.
@@ -112,8 +98,8 @@ fromFile2D file params = do
             return $ Left err
 
 -- | Load a cube map texture from a set of six files.
-fromFileCube :: MonadIO m => CubeMapFiles -> TextureParameters -> m (Either String Texture)
-fromFileCube files params = do
+fromFileCube :: MonadIO m => CubeMapFiles -> TextureFormat -> m (Either String Texture)
+fromFileCube files format' = do
     tex@(Texture handle) <- genTexture
     GL.glBindTexture GL.GL_TEXTURE_CUBE_MAP handle
 
@@ -126,18 +112,16 @@ fromFileCube files params = do
              ]
     eResult <- sequence <$>
         ( forM xs $ \(path, target) ->
-            load2D target path (format params)
+            load2D target path format'
         )
     case eResult of
         Right _  -> do
-            when (genMipmaps params) $
-                GL.glGenerateMipmap GL.GL_TEXTURE_CUBE_MAP
 
-            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_WRAP_S (toGLint $ wrapS params)
-            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_WRAP_T (toGLint $ wrapT params)
-            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_MIN_FILTER (toGLint $ minFilter params)
-            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_MAG_FILTER (toGLint $ magFilter params)
-            GL.glTexParameterf GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_LOD_BIAS (lodBias params)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_WRAP_S (toGLint WrapClampToEdge)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_WRAP_T (toGLint WrapClampToEdge)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_WRAP_R (toGLint WrapClampToEdge)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_MIN_FILTER (toGLint MinLinear)
+            GL.glTexParameteri GL.GL_TEXTURE_CUBE_MAP GL.GL_TEXTURE_MAG_FILTER (toGLint MagLinear)
 
             GL.glBindTexture GL.GL_TEXTURE_2D 0
             return $ Right tex
