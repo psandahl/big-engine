@@ -27,8 +27,7 @@ import           BigE.Types                (Texture (..), TextureFormat (..),
                                             TextureMinFilter (..),
                                             TextureWrap (..), ToGLint (..))
 import           Codec.Picture
-import           Control.Monad             (forM)
-import           Control.Monad             (when)
+import           Control.Monad             (forM, when)
 import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import qualified Data.Vector.Storable      as Vector
 import           Graphics.GL               (GLenum, GLfloat)
@@ -111,9 +110,7 @@ fromFileCube files format' = do
              , (positiveZ files, GL.GL_TEXTURE_CUBE_MAP_POSITIVE_Z)
              ]
     eResult <- sequence <$>
-        ( forM xs $ \(path, target) ->
-            load2D target path format'
-        )
+        forM xs (\(path, target) -> load2D target path format')
     case eResult of
         Right _  -> do
 
@@ -169,13 +166,13 @@ load2D :: MonadIO m => GLenum -> FilePath -> TextureFormat -> m (Either String (
 load2D target file RGB8 = do
     eImage <- readImageRGB8 file
     case eImage of
-        Right image -> Right <$> (setTexture2DRGB8 target image)
+        Right image -> Right <$> setTexture2DRGB8 target image
         Left err    -> return $ Left err
 
 load2D target file RGBA8 = do
     eImage <- readImageRGB8A file
     case eImage of
-        Right image -> Right <$> (setTexture2DRGBA8 target image)
+        Right image -> Right <$> setTexture2DRGBA8 target image
         Left err    -> return $ Left err
 
 setTexture2DRGB8 :: MonadIO m => GLenum -> Image PixelRGB8 -> m ()

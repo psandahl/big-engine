@@ -38,6 +38,7 @@ library
                        BigE.Attribute.Vert_P_C
                        BigE.Attribute.Vert_P_Tx
                        BigE.Attribute.Vert_P_N_Tx
+                       BigE.Entity
                        BigE.Math
                        BigE.Mesh
                        BigE.Runtime
