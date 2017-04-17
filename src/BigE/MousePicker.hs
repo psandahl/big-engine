@@ -18,6 +18,7 @@ module BigE.MousePicker
     , noObjectId
     , mkObjectId
     , init
+    , resize
     , enable
     , disable
     , delete
@@ -41,7 +42,7 @@ import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import           Data.Bits                 ((.|.))
 import           Data.ByteString.Char8     (ByteString)
 import           Foreign                   (nullPtr)
-import           Graphics.GL               (GLfloat, GLuint)
+import           Graphics.GL               (GLfloat, GLsizei, GLuint)
 import qualified Graphics.GL               as GL
 import           Linear                    (M44, (!*!))
 import           Prelude                   hiding (init)
@@ -56,6 +57,8 @@ data MousePicker = MousePicker
     , program          :: !Program
     , mvpLocation      :: !Location
     , objectIdLocation :: !Location
+    , textureWidth     :: !GLsizei
+    , textureHeight    :: !GLsizei
     } deriving Show
 
 -- | An object id of something that is pickable.
@@ -120,9 +123,28 @@ init width height = do
                 , program = program'
                 , mvpLocation = mvpLocation'
                 , objectIdLocation = objectIdLocation'
+                , textureWidth = fromIntegral width
+                , textureHeight = fromIntegral height
                 }
 
         Left err      -> return $ Left err
+
+-- | Resize the mouse picker.
+resize :: MonadIO m => Int -> Int -> MousePicker -> m (Either String MousePicker)
+resize width height mousePicker = do
+    deleteTexture $ depthTexture mousePicker
+    deleteTexture $ colorTexture mousePicker
+    deleteFramebuffer $ frameBuffer mousePicker
+
+    (frameBuffer', colorTexture', depthTexture') <- initResources width height
+
+    return $ Right mousePicker
+        { frameBuffer = frameBuffer'
+        , colorTexture = colorTexture'
+        , depthTexture = depthTexture'
+        , textureWidth = fromIntegral width
+        , textureHeight = fromIntegral height
+        }
 
 -- | Enable the framebuffer.
 enable :: MonadIO m => MousePicker -> m ()
@@ -150,6 +172,8 @@ render :: M44 GLfloat -> [Pickable] -> MousePicker -> Render app ()
 render vp xs mousePicker = do
     enable mousePicker
     Program.enable $ program mousePicker
+
+    GL.glViewport 0 0 (textureWidth mousePicker) (textureHeight mousePicker)
 
     GL.glEnable GL.GL_DEPTH_FUNC
     GL.glClearColor 1 1 1 0
