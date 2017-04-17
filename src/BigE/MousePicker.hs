@@ -190,10 +190,7 @@ initResources width height = do
     GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB)
                     (fromIntegral width) (fromIntegral height)
                     0 GL.GL_RGB GL.GL_UNSIGNED_BYTE nullPtr
-    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint WrapClampToEdge)
-    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint WrapClampToEdge)
-    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint MinNearest)
-    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint MagNearest)
+    configureTexture
     GL.glFramebufferTexture2D GL.GL_FRAMEBUFFER GL.GL_COLOR_ATTACHMENT0
                               GL.GL_TEXTURE_2D cTex 0
 
@@ -203,6 +200,7 @@ initResources width height = do
     GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_DEPTH_COMPONENT)
                     (fromIntegral width) (fromIntegral height)
                     0 GL.GL_DEPTH_COMPONENT GL.GL_FLOAT nullPtr
+    configureTexture
     GL.glFramebufferTexture2D GL.GL_FRAMEBUFFER GL.GL_DEPTH_ATTACHMENT
                               GL.GL_TEXTURE_2D dTex 0
 
@@ -221,6 +219,12 @@ initResources width height = do
     GL.glBindFramebuffer GL.GL_FRAMEBUFFER 0
 
     return (frameBuffer', colorTexture', depthTexture')
+    where
+      configureTexture = do
+        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint WrapClampToEdge)
+        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint WrapClampToEdge)
+        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint MinNearest)
+        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint MagNearest)
 
 -- | Vertex shader.
 vertexShader :: ByteString
