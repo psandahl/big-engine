@@ -13,16 +13,21 @@ module BigE.MousePicker
     , ObjectId
     , PickObject (..)
     , Pickable (..)
+    , firstObjectId
+    , nextObjectId
+    , noObjectId
     , mkObjectId
     , init
     , enable
     , disable
     , delete
     , render
-    , getObjectId
+    , getPickedObjectId
     ) where
 
-import           BigE.Internal.GLResources (genFramebuffer, genTexture)
+import           BigE.Internal.GLResources (deleteFramebuffer, deleteProgram,
+                                            deleteTexture, genFramebuffer,
+                                            genTexture)
 import qualified BigE.Program              as Program
 import           BigE.Runtime.Render       (Render)
 import           BigE.Types                (Framebuffer (..), Location (..),
@@ -41,6 +46,9 @@ import qualified Graphics.GL               as GL
 import           Linear                    (M44, (!*!))
 import           Prelude                   hiding (init)
 
+-- | The mouse picker record. Besides the color texture map the content of
+-- the record is opaque to the user. If using the color texture directly beware
+-- that the texture will be replaces when the display is resizing.
 data MousePicker = MousePicker
     { frameBuffer      :: !Framebuffer
     , colorTexture     :: !Texture
@@ -50,23 +58,51 @@ data MousePicker = MousePicker
     , objectIdLocation :: !Location
     } deriving Show
 
+-- | An object id of something that is pickable.
 data ObjectId = ObjectId !GLuint
     deriving (Eq, Show)
 
+-- | Uniform instance for 'ObjectId'.
 instance Uniform ObjectId where
     setUniform (Location loc) (ObjectId objId) =
         GL.glUniform1ui loc objId
 
+-- | All 3D types that need to be picked must derive the PickObject typeclass.
 class PickObject a where
+    -- | Get the type's 'ObjectId'.
     objectId :: a -> ObjectId
+
+    -- | Get the type's model/world matrix.
     modelMatrix :: a -> M44 GLfloat
+
+    -- | The type's simplified pick rendering function. Enabling VAO, render
+    -- primitives and disabling VAO is what should be done. Nothing more,
+    -- nothing less.
     renderForPicking :: a -> Render app ()
 
+-- | Type to allow lists of PickObject typeclass implementations of different
+-- types.
 data Pickable = forall a. PickObject a => Pickable a
 
+-- | Give the first possible - zero valued - 'ObjectId'.
+firstObjectId :: ObjectId
+firstObjectId = ObjectId 0
+
+-- | Give the next - enumerated - 'ObjectId'.
+nextObjectId :: ObjectId -> ObjectId
+nextObjectId (ObjectId objId) = ObjectId (objId + 1)
+
+-- | Give the 'no object id'. The id of things that's not pickable. Like
+-- the background or explicitely not pickable object (which need to be
+-- rendered for depth checking).
+noObjectId :: ObjectId
+noObjectId = ObjectId maxBound
+
+-- | Make an object id with an explicit value.
 mkObjectId :: GLuint -> ObjectId
 mkObjectId = ObjectId
 
+-- | Initialize the mouse picker with the display dimensions of width and height.
 init :: MonadIO m => Int -> Int -> m (Either String MousePicker)
 init width height = do
     eProgram <- initProgram
@@ -88,24 +124,35 @@ init width height = do
 
         Left err      -> return $ Left err
 
+-- | Enable the framebuffer.
 enable :: MonadIO m => MousePicker -> m ()
 enable mousePicker = do
     let Framebuffer fbo = frameBuffer mousePicker
     GL.glBindFramebuffer GL.GL_DRAW_FRAMEBUFFER fbo
 
+-- | Disable the framebuffer.
 disable :: MonadIO m => m ()
 disable = GL.glBindFramebuffer GL.GL_DRAW_FRAMEBUFFER 0
 
+-- | Delete all mouse picker resources.
 delete :: MonadIO m => MousePicker -> m ()
-delete = undefined
+delete mousePicker = do
+    deleteTexture $ depthTexture mousePicker
+    deleteTexture $ colorTexture mousePicker
+    deleteFramebuffer $ frameBuffer mousePicker
+    deleteProgram $ program mousePicker
 
+-- | Render the 'Pickable' objects, i.e. types implementing the 'PickObject'
+-- typeclass from the list. The given matrix shall be a valid perspective *
+-- view matrix for the scene. When done the OpenGL state is set with
+-- 1 1 1 0 as clear color, and depth checking is activated.
 render :: M44 GLfloat -> [Pickable] -> MousePicker -> Render app ()
 render vp xs mousePicker = do
     enable mousePicker
     Program.enable $ program mousePicker
 
     GL.glEnable GL.GL_DEPTH_FUNC
-    GL.glClearColor 1 1 1 1
+    GL.glClearColor 1 1 1 0
     GL.glClear (GL.GL_COLOR_BUFFER_BIT .|. GL.GL_DEPTH_BUFFER_BIT)
 
     forM_ xs $ \(Pickable pickObj) -> do
@@ -117,9 +164,12 @@ render vp xs mousePicker = do
     Program.disable
     disable
 
-getObjectId :: MonadIO m => (Int, Int) -> MousePicker -> m ObjectId
-getObjectId = undefined
+-- | Get the 'ObjectId' for the thing beeing at the (x, y) pixel coordinate.
+-- If no identifiable object can be found Nothing is returned.
+getPickedObjectId :: MonadIO m => (Int, Int) -> MousePicker -> m (Maybe ObjectId)
+getPickedObjectId = undefined
 
+-- | Initialize the shader programs.
 initProgram :: MonadIO m => m (Either String Program)
 initProgram =
     Program.fromByteString
@@ -127,6 +177,7 @@ initProgram =
         , (FragmentShader, "builtin/MousePicker/fragment.glsl", fragmentShader)
         ]
 
+-- | Initialize the Framebuffer and Texture resources needed.
 initResources :: MonadIO m => Int -> Int -> m (Framebuffer, Texture, Texture)
 initResources width height = do
     -- Create the frame buffer object.
@@ -171,7 +222,7 @@ initResources width height = do
 
     return (frameBuffer', colorTexture', depthTexture')
 
-
+-- | Vertex shader.
 vertexShader :: ByteString
 vertexShader =
     "#version 330 core\n\
@@ -184,6 +235,7 @@ vertexShader =
     \  gl_Position = mvp * vec4(position, 1.0);\n\
     \}"
 
+-- | Fragment shader.
 fragmentShader :: ByteString
 fragmentShader =
     "#version 330 core\n\
