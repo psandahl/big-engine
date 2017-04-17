@@ -27,9 +27,12 @@ import qualified BigE.Program              as Program
 import           BigE.Runtime.Render       (Render)
 import           BigE.Types                (Framebuffer (..), Location (..),
                                             Program, ShaderType (..),
-                                            Texture (..), Uniform (..))
+                                            Texture (..), TextureMagFilter (..),
+                                            TextureMinFilter (..),
+                                            TextureWrap (..), ToGLint (..),
+                                            Uniform (..))
 import           Control.Monad             (forM_)
-import           Control.Monad.IO.Class    (MonadIO)
+import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import           Data.Bits                 ((.|.))
 import           Data.ByteString.Char8     (ByteString)
 import           Foreign                   (nullPtr)
@@ -100,6 +103,9 @@ render :: M44 GLfloat -> [Pickable] -> MousePicker -> Render app ()
 render vp xs mousePicker = do
     enable mousePicker
     Program.enable $ program mousePicker
+
+    GL.glEnable GL.GL_DEPTH_FUNC
+    GL.glClearColor 1 1 1 1
     GL.glClear (GL.GL_COLOR_BUFFER_BIT .|. GL.GL_DEPTH_BUFFER_BIT)
 
     forM_ xs $ \(Pickable pickObj) -> do
@@ -133,6 +139,10 @@ initResources width height = do
     GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB)
                     (fromIntegral width) (fromIntegral height)
                     0 GL.GL_RGB GL.GL_UNSIGNED_BYTE nullPtr
+    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint WrapClampToEdge)
+    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint WrapClampToEdge)
+    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint MinNearest)
+    GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint MagNearest)
     GL.glFramebufferTexture2D GL.GL_FRAMEBUFFER GL.GL_COLOR_ATTACHMENT0
                               GL.GL_TEXTURE_2D cTex 0
 
@@ -150,6 +160,10 @@ initResources width height = do
 
     -- Set the attached color buffer as draw buffer.
     GL.glDrawBuffer GL.GL_COLOR_ATTACHMENT0
+
+    bufStat <- GL.glCheckFramebufferStatus GL.GL_FRAMEBUFFER
+    liftIO $ print (bufStat == GL.GL_FRAMEBUFFER_COMPLETE)
+    liftIO $ print bufStat
 
     -- Restore default frame buffer.
     GL.glBindTexture GL.GL_TEXTURE_2D 0

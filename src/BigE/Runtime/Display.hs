@@ -101,17 +101,17 @@ renderLoop ref config = go =<< (window <$> readIORef ref)
                           , lastTime = now'
                       }
 
-                -- 2. Poll events and execute all event callbacks for the frame.
-                GLFW.pollEvents
-
-                -- 4. Allow the frame to perform time based animations.
+                -- 2. Allow the frame to perform time based animations.
                 void $ runRender (animate config) ref
 
-                -- 4. Render the frame.
+                -- 3. Render the frame.
                 void $ runRender (render config) ref
 
-                -- 5. Swap off-screen and screen buffers.
+                -- 4. Swap off-screen and screen buffers.
                 GLFW.swapBuffers win
+
+                -- 5. Poll events and execute all event callbacks for the frame.
+                GLFW.pollEvents
 
                 -- Check if a window close is requested. Otherwise continue one
                 -- more iteration.
