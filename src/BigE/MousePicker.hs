@@ -39,10 +39,10 @@ import           BigE.Types                (Framebuffer (..), Location (..),
                                             Uniform (..))
 import           Control.Monad             (forM_)
 import           Control.Monad.IO.Class    (MonadIO, liftIO)
-import           Data.Bits                 ((.|.))
+import           Data.Bits                 (shift, (.|.))
 import           Data.ByteString.Char8     (ByteString)
-import           Foreign                   (nullPtr)
-import           Graphics.GL               (GLfloat, GLsizei, GLuint)
+import           Foreign                   (nullPtr, peekArray, withArray)
+import           Graphics.GL               (GLfloat, GLsizei, GLubyte, GLuint)
 import qualified Graphics.GL               as GL
 import           Linear                    (M44, (!*!))
 import           Prelude                   hiding (init)
@@ -99,11 +99,12 @@ nextObjectId (ObjectId objId) = ObjectId (objId + 1)
 -- the background or explicitely not pickable object (which need to be
 -- rendered for depth checking).
 noObjectId :: ObjectId
-noObjectId = ObjectId maxBound
+noObjectId = mkObjectId maxBound maxBound maxBound
 
--- | Make an object id with an explicit value.
-mkObjectId :: GLuint -> ObjectId
-mkObjectId = ObjectId
+-- | Make an object id with an explicit value given from r, g and b values.
+mkObjectId :: GLubyte -> GLubyte -> GLubyte -> ObjectId
+mkObjectId r g b =
+    ObjectId $ shift (fromIntegral r) 16 .|. shift (fromIntegral g) 8 .|. fromIntegral b
 
 -- | Initialize the mouse picker with the display dimensions of width and height.
 init :: MonadIO m => Int -> Int -> m (Either String MousePicker)
@@ -191,7 +192,28 @@ render vp xs mousePicker = do
 -- | Get the 'ObjectId' for the thing beeing at the (x, y) pixel coordinate.
 -- If no identifiable object can be found Nothing is returned.
 getPickedObjectId :: MonadIO m => (Int, Int) -> MousePicker -> m (Maybe ObjectId)
-getPickedObjectId = undefined
+getPickedObjectId (x, y) mousePicker = do
+    let Framebuffer fbo = frameBuffer mousePicker
+
+    GL.glBindFramebuffer GL.GL_READ_FRAMEBUFFER fbo
+    GL.glReadBuffer GL.GL_COLOR_ATTACHMENT0
+
+    objId <- liftIO $ readPixel
+
+    GL.glReadBuffer GL.GL_NONE
+    GL.glBindFramebuffer GL.GL_READ_FRAMEBUFFER 0
+
+    if objId /= noObjectId
+        then return $ Just objId
+        else return Nothing
+    where
+        readPixel :: IO ObjectId
+        readPixel =
+            withArray [0, 0, 0] $ \ptr -> do
+                GL.glReadPixels (fromIntegral x) (fromIntegral y) 1 1
+                                GL.GL_RGB GL.GL_UNSIGNED_BYTE ptr
+                [r, g, b] <- peekArray 3 ptr
+                return $ mkObjectId r g b
 
 -- | Initialize the shader programs.
 initProgram :: MonadIO m => m (Either String Program)
