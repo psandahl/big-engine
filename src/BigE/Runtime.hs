@@ -13,11 +13,14 @@ module BigE.Runtime
     , DisplayMode (..)
     , Key (..)
     , ModifierKeys (..)
+    , MouseButton (..)
     , Render
     , WindowSizeCallback
     , KeyPressedCallback
     , KeyReleasedCallback
     , KeyRepeatingCallback
+    , MousePressedCallback
+    , MouseReleasedCallback
     , displayDimensions
     , frameDuration
     , getAppState
@@ -29,6 +32,8 @@ module BigE.Runtime
     , setKeyPressedCallback
     , setKeyReleasedCallback
     , setKeyRepeatingCallback
+    , setMousePressedCallback
+    , setMouseReleasedCallback
     , runBigE
     ) where
 
@@ -39,7 +44,10 @@ import           BigE.Runtime.Display       (initDisplay, renderLoop)
 import           BigE.Runtime.Render        (Key (..), KeyPressedCallback,
                                              KeyReleasedCallback,
                                              KeyRepeatingCallback,
-                                             ModifierKeys (..), Render,
+                                             ModifierKeys (..),
+                                             MouseButton (..),
+                                             MousePressedCallback,
+                                             MouseReleasedCallback, Render,
                                              RenderState (..),
                                              WindowSizeCallback,
                                              displayDimensions, frameDuration,
@@ -48,6 +56,8 @@ import           BigE.Runtime.Render        (Key (..), KeyPressedCallback,
                                              runRender, setKeyPressedCallback,
                                              setKeyReleasedCallback,
                                              setKeyRepeatingCallback,
+                                             setMousePressedCallback,
+                                             setMouseReleasedCallback,
                                              setWindowSizeCallback)
 import           Control.Monad              (void)
 import           Data.IORef                 (modifyIORef, newIORef)

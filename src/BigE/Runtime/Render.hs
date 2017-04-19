@@ -12,10 +12,13 @@ module BigE.Runtime.Render
     , RenderState (..)
     , Key (..)
     , ModifierKeys (..)
+    , MouseButton (..)
     , WindowSizeCallback
     , KeyPressedCallback
     , KeyReleasedCallback
     , KeyRepeatingCallback
+    , MousePressedCallback
+    , MouseReleasedCallback
     , runRender
     , frameDuration
     , displayDimensions
@@ -27,6 +30,8 @@ module BigE.Runtime.Render
     , setKeyPressedCallback
     , setKeyRepeatingCallback
     , setKeyReleasedCallback
+    , setMousePressedCallback
+    , setMouseReleasedCallback
     , liftIO
     ) where
 
@@ -34,40 +39,48 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Control.Monad.Reader   (MonadReader, ReaderT, ask, runReaderT)
 import           Data.IORef             (IORef, modifyIORef, readIORef)
 import           Data.Maybe             (fromJust)
-import           Graphics.UI.GLFW       (Key (..), ModifierKeys (..), Window)
+import           Graphics.UI.GLFW       (Key (..), ModifierKeys (..),
+                                         MouseButton (..), Window)
 
 type WindowSizeCallback app = Int -> Int -> Render app ()
 type KeyPressedCallback app = Key -> ModifierKeys -> Render app ()
 type KeyRepeatingCallback app = Key -> ModifierKeys -> Render app ()
 type KeyReleasedCallback app = Key -> ModifierKeys -> Render app ()
+type MousePressedCallback app = MouseButton -> ModifierKeys -> (Int, Int) -> Render app ()
+type MouseReleasedCallback app = MouseButton -> ModifierKeys -> (Int, Int) -> Render app ()
 
 -- | BigEngine's internal render state.
 data RenderState app = RenderState
-    { window                  :: !Window
+    { window                   :: !Window
       -- ^ The GLFW window.
 
-    , dimensions              :: !(Int, Int)
+    , dimensions               :: !(Int, Int)
       -- ^ The current dimensions for the window (width, height).
 
-    , lastTime                :: !Double
+    , lastTime                 :: !Double
       -- ^ Last taken timestamp value.
 
-    , duration                :: !Double
+    , duration                 :: !Double
       -- ^ The duration in (fractional) seconds since previous frame.
 
-    , appWindowSizeCallback   :: !(Maybe (WindowSizeCallback app))
+    , appWindowSizeCallback    :: !(Maybe (WindowSizeCallback app))
       -- ^ The application's window size change callback.
 
-    , appKeyPressedCallback   :: !(Maybe (KeyPressedCallback app))
+    , appKeyPressedCallback    :: !(Maybe (KeyPressedCallback app))
       -- ^ The application's key pressed callback.
 
-    , appKeyRepeatingCallback :: !(Maybe (KeyRepeatingCallback app))
+    , appKeyRepeatingCallback  :: !(Maybe (KeyRepeatingCallback app))
       -- ^ The application's key repeating callback.
 
-    , appKeyReleasedCallback  :: !(Maybe (KeyReleasedCallback app))
+    , appKeyReleasedCallback   :: !(Maybe (KeyReleasedCallback app))
       -- ^ The application's key released callback.
 
-    , appState                :: !(Maybe app)
+    , appMousePressedCallback  :: !(Maybe (MousePressedCallback app))
+      -- ^ The applications mouse pressed callback.
+
+    , appMouseReleasedCallback :: !(Maybe (MouseReleasedCallback app))
+
+    , appState                 :: !(Maybe app)
       -- ^ The user provided application state.
     }
 
@@ -133,6 +146,18 @@ setKeyReleasedCallback :: Maybe (KeyReleasedCallback app) -> Render app ()
 setKeyReleasedCallback val = do
     ref <- ask
     modifyIORef' ref $ \state -> state { appKeyReleasedCallback = val }
+
+-- | Set (or unset) the 'MousePressedCallback'.
+setMousePressedCallback :: Maybe (MousePressedCallback app) -> Render app ()
+setMousePressedCallback val = do
+    ref <- ask
+    modifyIORef' ref $ \state -> state { appMousePressedCallback = val }
+
+-- | Set (or unset) the 'MouseReleasedCallback'.
+setMouseReleasedCallback :: Maybe (MouseReleasedCallback app) -> Render app ()
+setMouseReleasedCallback val = do
+    ref <- ask
+    modifyIORef' ref $ \state -> state { appMouseReleasedCallback = val }
 
 readIORef' :: IORef (RenderState app) -> Render app (RenderState app)
 readIORef' = liftIO . readIORef

@@ -80,6 +80,8 @@ initDisplay config = runExceptT $ do
         , appKeyPressedCallback = Nothing
         , appKeyReleasedCallback = Nothing
         , appKeyRepeatingCallback = Nothing
+        , appMousePressedCallback = Nothing
+        , appMouseReleasedCallback = Nothing
         , appState = Nothing
         }
 
