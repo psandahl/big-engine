@@ -176,7 +176,7 @@ render vp xs mousePicker = do
 
     GL.glViewport 0 0 (textureWidth mousePicker) (textureHeight mousePicker)
 
-    GL.glEnable GL.GL_DEPTH_FUNC
+    GL.glEnable GL.GL_DEPTH_TEST
     GL.glClearColor 1 1 1 0
     GL.glClear (GL.GL_COLOR_BUFFER_BIT .|. GL.GL_DEPTH_BUFFER_BIT)
 
@@ -233,7 +233,7 @@ initResources width height = do
     -- Create the color texture and attach it to the frame buffer.
     colorTexture'@(Texture cTex) <- genTexture
     GL.glBindTexture GL.GL_TEXTURE_2D cTex
-    GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB)
+    GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB8)
                     (fromIntegral width) (fromIntegral height)
                     0 GL.GL_RGB GL.GL_UNSIGNED_BYTE nullPtr
     configureTexture
