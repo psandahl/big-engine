@@ -67,12 +67,10 @@ instance ToGLenum ShaderType where
 
 data Primitive
     = Triangles
-    | Quads
     deriving Show
 
 instance ToGLenum Primitive where
     toGLenum Triangles = GL.GL_TRIANGLES
-    toGLenum Quads     = GL.GL_QUADS
 
 newtype Location = Location GLint
     deriving Show
