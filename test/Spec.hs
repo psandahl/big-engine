@@ -29,6 +29,7 @@ testSuite =
         ]
     , testGroup "Font Parser tests"
         [ testCase "Parse Spacing" parseSpacing
+        , testCase "Parse Padding" parsePadding
         ]
     , testGroup "PickId tests"
         [ testCase "zeroPickId shall be zero" zeroValuedPickId

@@ -8,9 +8,10 @@
 -- Language: Haskell2010
 module BigE.TextRenderer.Parser
     ( parseSpacing
+    , parsePadding
     ) where
 
-import           BigE.TextRenderer.Font          (Spacing (..))
+import           BigE.TextRenderer.Font          (Padding (..), Spacing (..))
 import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Text.Megaparsec
@@ -20,18 +21,34 @@ import qualified Text.Megaparsec.Lexer           as Lexer
 -- | Parse a 'Spacing' record from the stream.
 parseSpacing :: Parser Spacing
 parseSpacing = do
-    kwSpacing
-    void $ lexeme (char '=')
-    h <- signedInt
-    void $ lexeme (char ',')
-    v <- signedInt
-    return $ Spacing { horizontal = h, vertical = v }
+    kw "spacing"
+    assign
+    Spacing <$> signedInt <* comma <*> signedInt
 
-kwSpacing :: Parser ()
-kwSpacing = void $ Lexer.symbol sc "spacing"
+-- | Parse a 'Padding' record from the stream.
+parsePadding :: Parser Padding
+parsePadding = do
+    kw "padding"
+    assign
+    Padding <$> unsignedInt <* comma
+            <*> unsignedInt <* comma
+            <*> unsignedInt <* comma
+            <*> unsignedInt
+
+kw :: String -> Parser ()
+kw = void . Lexer.symbol sc
+
+assign :: Parser ()
+assign = void $ lexeme (char '=')
+
+comma :: Parser ()
+comma = void $ lexeme (char ',')
 
 signedInt :: Parser Int
-signedInt = fromIntegral <$> Lexer.signed sc Lexer.integer <* sc
+signedInt = fromIntegral <$> lexeme (Lexer.signed sc Lexer.integer)
+
+unsignedInt :: Parser Int
+unsignedInt = fromIntegral <$> lexeme Lexer.integer
 
 -- | Space consumer; either whitespaces or line comments starting with '#'.
 sc :: Parser ()
