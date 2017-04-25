@@ -3,6 +3,7 @@ module Main where
 import           Test.Framework                 (Test, defaultMain, testGroup)
 import           Test.Framework.Providers.HUnit (testCase)
 
+import           FontParserTests
 import           MathTests
 import           PickIdTests
 import           VertexTests
@@ -25,6 +26,9 @@ testSuite =
         , testCase "vert_P_N_Tx sizeOf == 32" vertP_N_Tx_sizeOf
         , testCase "Vert_P_N_Tx alignment == 4" vertP_N_Tx_alignment
         , testCase "vertP_N_Tx_encodeDecode equals" vertP_N_Tx_encodeDecode
+        ]
+    , testGroup "Font Parser tests"
+        [ testCase "Parse Spacing" parseSpacing
         ]
     , testGroup "PickId tests"
         [ testCase "zeroPickId shall be zero" zeroValuedPickId

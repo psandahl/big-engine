@@ -19,12 +19,14 @@ test-suite big-engine-test
   main-is:             Spec.hs
   other-modules:       MathTests
                        PickIdTests
+                       FontParserTests
                        VertexTests
   build-depends:       base >= 4.7 && < 5
                      , big-engine
                      , HUnit
                      , HUnit-approx
                      , linear
+                     , megaparsec
                      , test-framework
                      , test-framework-hunit
                      , test-framework-quickcheck2
@@ -39,6 +41,9 @@ library
                        BigE.Attribute.Vert_P_C
                        BigE.Attribute.Vert_P_Tx
                        BigE.Attribute.Vert_P_N_Tx
+                       BigE.TextRenderer
+                       BigE.TextRenderer.Font
+                       BigE.TextRenderer.Parser
                        BigE.Math
                        BigE.Mesh
                        BigE.MousePicker
