@@ -12,13 +12,23 @@ import qualified BigE.TextRenderer.Parser as Parser
 
 parseSpacing :: Assertion
 parseSpacing = do
-    Just (Spacing 1 2) @=? parseMaybe Parser.parseSpacing "spacing=1,2"
-    Just (Spacing 1 2) @=? parseMaybe Parser.parseSpacing "spacing = 1 , 2"
-    Just (Spacing (-1) (-2)) @=? parseMaybe Parser.parseSpacing "spacing=-1,-2"
+    Just (Spacing 1 2) @=?
+        parseMaybe (Parser.keyValue "spacing" Parser.parseSpacing) "spacing=1,2"
+
+    Just (Spacing 1 2) @=?
+        parseMaybe (Parser.keyValue "spacing" Parser.parseSpacing) "spacing = 1 , 2"
+
+    Just (Spacing (-1) (-2)) @=?
+        parseMaybe (Parser.keyValue "spacing" Parser.parseSpacing) "spacing=-1,-2"
 
 parsePadding :: Assertion
 parsePadding = do
-    Just (Padding 1 2 3 4) @=? parseMaybe Parser.parsePadding "padding=1,2,3,4"
-    Just (Padding 1 2 3 4) @=? parseMaybe Parser.parsePadding "padding = 1 , 2 , 3 , 4"
+    Just (Padding 1 2 3 4) @=?
+        parseMaybe (Parser.keyValue "padding" Parser.parsePadding) "padding=1,2,3,4"
+
+    Just (Padding 1 2 3 4) @=?
+        parseMaybe (Parser.keyValue "padding" Parser.parsePadding) "padding = 1 , 2 , 3 , 4"
+
     -- No negatives.
-    Nothing @=? parseMaybe Parser.parsePadding "padding=-1,2,3,4"
+    Nothing @=?
+        parseMaybe (Parser.keyValue "padding" Parser.parsePadding) "padding=-1,2,3,4"

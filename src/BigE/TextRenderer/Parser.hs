@@ -9,6 +9,7 @@
 module BigE.TextRenderer.Parser
     ( parseSpacing
     , parsePadding
+    , keyValue
     ) where
 
 import           BigE.TextRenderer.Font          (Padding (..), Spacing (..))
@@ -20,20 +21,24 @@ import qualified Text.Megaparsec.Lexer           as Lexer
 
 -- | Parse a 'Spacing' record from the stream.
 parseSpacing :: Parser Spacing
-parseSpacing = do
-    kw "spacing"
-    assign
-    Spacing <$> signedInt <* comma <*> signedInt
+parseSpacing = Spacing <$> signedInt <* comma <*> signedInt
 
 -- | Parse a 'Padding' record from the stream.
 parsePadding :: Parser Padding
-parsePadding = do
-    kw "padding"
-    assign
+parsePadding =
     Padding <$> unsignedInt <* comma
             <*> unsignedInt <* comma
             <*> unsignedInt <* comma
             <*> unsignedInt
+
+-- | Parse a keyname and a value from the stream.
+keyValue :: String -> Parser a -> Parser a
+keyValue key parser = do
+    kw key
+    assign
+    parser
+
+-- Helper parsers.
 
 kw :: String -> Parser ()
 kw = void . Lexer.symbol sc
@@ -49,6 +54,9 @@ signedInt = fromIntegral <$> lexeme (Lexer.signed sc Lexer.integer)
 
 unsignedInt :: Parser Int
 unsignedInt = fromIntegral <$> lexeme Lexer.integer
+
+--boolean :: Parser Bool
+--boolean = (/= 0) <$> unsignedInt
 
 -- | Space consumer; either whitespaces or line comments starting with '#'.
 sc :: Parser ()
