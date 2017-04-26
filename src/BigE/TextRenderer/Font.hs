@@ -22,7 +22,7 @@ data Info = Info
     { face     :: !String
       -- ^ This is the name of the true type font.
 
-    {-, size     :: !Int
+    , size     :: !Int
       -- ^ The size of the true type font.
 
     , bold     :: !Bool

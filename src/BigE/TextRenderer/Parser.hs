@@ -26,6 +26,16 @@ parseInfo :: Parser Info
 parseInfo = do
     kw "info"
     Info <$> keyValue "face" quotedString
+         <*> keyValue "size" unsignedInt
+         <*> keyValue "bold" boolean
+         <*> keyValue "italic" boolean
+         <*> keyValue "charset" quotedString
+         <*> keyValue "unicode" boolean
+         <*> keyValue "stretchH" unsignedInt
+         <*> keyValue "smooth" boolean
+         <*> keyValue "aa" unsignedInt
+         <*> keyValue "padding" parsePadding
+         <*> keyValue "spacing" parseSpacing
 
 -- | Parse a 'Spacing' record from the stream.
 parseSpacing :: Parser Spacing
@@ -42,9 +52,9 @@ parsePadding =
 -- | Parse a keyname and a value from the stream.
 keyValue :: String -> Parser a -> Parser a
 keyValue key parser = do
-    kw key
-    assign
-    parser
+    lexeme (kw key)
+    lexeme assign
+    lexeme parser
 
 -- Helper parsers.
 
@@ -63,8 +73,8 @@ signedInt = fromIntegral <$> lexeme (Lexer.signed sc Lexer.integer)
 unsignedInt :: Parser Int
 unsignedInt = fromIntegral <$> lexeme Lexer.integer
 
---boolean :: Parser Bool
---boolean = (/= 0) <$> unsignedInt
+boolean :: Parser Bool
+boolean = (/= 0) <$> unsignedInt
 
 quotedString :: Parser String
 quotedString = between (char '\"') (char '\"') (many $ noneOf ['\"'])
