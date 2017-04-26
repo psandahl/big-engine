@@ -7,17 +7,25 @@
 -- Portability: portable
 -- Language: Haskell2010
 module BigE.TextRenderer.Parser
-    ( parseSpacing
+    ( parseInfo
+    , parseSpacing
     , parsePadding
     , keyValue
     ) where
 
-import           BigE.TextRenderer.Font          (Padding (..), Spacing (..))
+import           BigE.TextRenderer.Font          (Info (..), Padding (..),
+                                                  Spacing (..))
 import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Text.Megaparsec
 import           Text.Megaparsec.ByteString.Lazy
 import qualified Text.Megaparsec.Lexer           as Lexer
+
+-- | Parse an 'Info' record from the stream.
+parseInfo :: Parser Info
+parseInfo = do
+    kw "info"
+    Info <$> keyValue "face" quotedString
 
 -- | Parse a 'Spacing' record from the stream.
 parseSpacing :: Parser Spacing
@@ -57,6 +65,9 @@ unsignedInt = fromIntegral <$> lexeme Lexer.integer
 
 --boolean :: Parser Bool
 --boolean = (/= 0) <$> unsignedInt
+
+quotedString :: Parser String
+quotedString = between (char '\"') (char '\"') (many $ noneOf ['\"'])
 
 -- | Space consumer; either whitespaces or line comments starting with '#'.
 sc :: Parser ()

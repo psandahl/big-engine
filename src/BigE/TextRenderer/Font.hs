@@ -22,7 +22,7 @@ data Info = Info
     { face     :: !String
       -- ^ This is the name of the true type font.
 
-    , size     :: !Int
+    {-, size     :: !Int
       -- ^ The size of the true type font.
 
     , bold     :: !Bool
@@ -50,7 +50,7 @@ data Info = Info
       -- ^ The padding for each character (up, right, down, left).
 
     , spacing  :: !Spacing
-      -- ^ The spacing for each character (horizontal, vertical).
+      -- ^ The spacing for each character (horizontal, vertical).-}
     } deriving (Eq, Show)
 
 -- | Padding to be used in 'Info'.

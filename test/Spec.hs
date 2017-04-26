@@ -28,7 +28,8 @@ testSuite =
         , testCase "vertP_N_Tx_encodeDecode equals" vertP_N_Tx_encodeDecode
         ]
     , testGroup "Font Parser tests"
-        [ testCase "Parse Spacing" parseSpacing
+        [ testCase "Parse Info" parseInfo
+        , testCase "Parse Spacing" parseSpacing
         , testCase "Parse Padding" parsePadding
         ]
     , testGroup "PickId tests"

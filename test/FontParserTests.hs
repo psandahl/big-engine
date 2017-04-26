@@ -1,14 +1,21 @@
 {-# LANGUAGE OverloadedStrings #-}
 module FontParserTests
-    ( parseSpacing
+    ( parseInfo
+    , parseSpacing
     , parsePadding
     ) where
 
 import           Test.HUnit
 import           Text.Megaparsec          (parseMaybe)
 
-import           BigE.TextRenderer.Font   (Padding (..), Spacing (..))
+import           BigE.TextRenderer.Font   (Info (..), Padding (..),
+                                           Spacing (..))
 import qualified BigE.TextRenderer.Parser as Parser
+
+parseInfo :: Assertion
+parseInfo = do
+    Just (Info "Verdana") @=?
+        parseMaybe Parser.parseInfo "info face=\"Verdana\""
 
 parseSpacing :: Assertion
 parseSpacing = do
