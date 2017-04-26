@@ -11,11 +11,13 @@ module BigE.TextRenderer.Parser
     , parseSpacing
     , parsePadding
     , parseCommon
+    , parsePage
     , keyValue
     ) where
 
 import           BigE.TextRenderer.Font          (Common (..), Info (..),
-                                                  Padding (..), Spacing (..))
+                                                  Padding (..), Page (..),
+                                                  Spacing (..))
 import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Text.Megaparsec
@@ -60,6 +62,13 @@ parseCommon = do
            <*> keyValue "scaleH" unsignedInt
            <*> keyValue "pages" unsignedInt
            <*> keyValue "packed" boolean
+
+-- | Parse a 'Page' record from the stream.
+parsePage :: Parser Page
+parsePage = do
+    kw "page"
+    Page <$> keyValue "id" unsignedInt
+         <*> keyValue "file" quotedString
 
 -- | Parse a keyname and a value from the stream.
 keyValue :: String -> Parser a -> Parser a

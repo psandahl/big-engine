@@ -93,8 +93,15 @@ data Common = Common
       -- into each of the texture channels.
     } deriving (Eq, Show)
 
+-- | Page data for a bitmap font.
+-- See <http://www.angelcode.com/products/bmfont/doc/file_format.html>
 data Page = Page
-    deriving (Eq, Show)
+    { pageId :: !Int
+      -- ^ The page id.
+
+    , file   :: !String
+      -- ^ The texture file name.
+    } deriving (Eq, Show)
 
 data Character = Character
     deriving (Eq, Show)

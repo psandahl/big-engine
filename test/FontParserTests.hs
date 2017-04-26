@@ -4,13 +4,14 @@ module FontParserTests
     , parseSpacing
     , parsePadding
     , parseCommon
+    , parsePage
     ) where
 
 import           Test.HUnit
 import           Text.Megaparsec          (parseMaybe)
 
 import           BigE.TextRenderer.Font   (Common (..), Info (..), Padding (..),
-                                           Spacing (..))
+                                           Page (..), Spacing (..))
 import qualified BigE.TextRenderer.Parser as Parser
 
 -- | Test parsing of 'Info' records.
@@ -65,6 +66,17 @@ parseCommon = do
         parseMaybe Parser.parseCommon
             "common lineHeight=90 base=75 scaleW=512 scaleH=512 pages=1 packed=0"
 
+    -- With some spacing around the tokens.
     Just (Common 90 75 512 512 1 False) @=?
         parseMaybe Parser.parseCommon
             "common lineHeight = 90 base = 75 scaleW = 512 scaleH = 512 pages = 1 packed = 0"
+
+-- | Test parsing of 'Page' records.
+parsePage :: Assertion
+parsePage = do
+    Just (Page 0 "verdana.png") @=?
+        parseMaybe Parser.parsePage "page id=0 file=\"verdana.png\""
+
+    -- With some spacing around the tokens.
+    Just (Page 0 "verdana.png") @=?
+        parseMaybe Parser.parsePage "page id = 0 file = \"verdana.png\""
