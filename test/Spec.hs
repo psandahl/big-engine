@@ -33,6 +33,7 @@ testSuite =
         , testCase "Parse Padding" parsePadding
         , testCase "Parse Common" parseCommon
         , testCase "Parse Page" parsePage
+        , testCase "Parse Character" parseCharacter
         ]
     , testGroup "PickId tests"
         [ testCase "zeroPickId shall be zero" zeroValuedPickId

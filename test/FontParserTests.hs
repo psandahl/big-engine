@@ -5,13 +5,15 @@ module FontParserTests
     , parsePadding
     , parseCommon
     , parsePage
+    , parseCharacter
     ) where
 
 import           Test.HUnit
 import           Text.Megaparsec          (parseMaybe)
 
-import           BigE.TextRenderer.Font   (Common (..), Info (..), Padding (..),
-                                           Page (..), Spacing (..))
+import           BigE.TextRenderer.Font   (Character (..), Common (..),
+                                           Info (..), Padding (..), Page (..),
+                                           Spacing (..))
 import qualified BigE.TextRenderer.Parser as Parser
 
 -- | Test parsing of 'Info' records.
@@ -80,3 +82,11 @@ parsePage = do
     -- With some spacing around the tokens.
     Just (Page 0 "verdana.png") @=?
         parseMaybe Parser.parsePage "page id = 0 file = \"verdana.png\""
+
+-- | Test parsing of 'Character' records.
+parseCharacter :: Assertion
+parseCharacter = do
+    Just (Character 65 0 1 512 512) @=?
+        parseMaybe
+            Parser.parseCharacter
+                "char id=65 x=0 y=1 width=512 height=512"

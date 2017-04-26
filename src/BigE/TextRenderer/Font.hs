@@ -103,8 +103,24 @@ data Page = Page
       -- ^ The texture file name.
     } deriving (Eq, Show)
 
+-- | Character data for a bitmap font.
+-- See <http://www.angelcode.com/products/bmfont/doc/file_format.html>
 data Character = Character
-    deriving (Eq, Show)
+    { charId :: !Int
+      -- ^ The character id (ascii code).
+
+    , x      :: !Int
+      -- ^ The left position of the character image in the texture.
+
+    , y      :: !Int
+      -- The top position of the character image in the texture.
+
+    , width  :: !Int
+      -- ^ The width of the character image in the texture.
+
+    , height :: !Int
+      -- ^ The height of the character image in the texture.
+    } deriving (Eq, Show)
 
 data Kerning = Kerning
     deriving (Eq, Show)
