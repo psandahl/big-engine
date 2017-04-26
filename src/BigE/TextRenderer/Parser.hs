@@ -10,11 +10,12 @@ module BigE.TextRenderer.Parser
     ( parseInfo
     , parseSpacing
     , parsePadding
+    , parseCommon
     , keyValue
     ) where
 
-import           BigE.TextRenderer.Font          (Info (..), Padding (..),
-                                                  Spacing (..))
+import           BigE.TextRenderer.Font          (Common (..), Info (..),
+                                                  Padding (..), Spacing (..))
 import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Text.Megaparsec
@@ -48,6 +49,17 @@ parsePadding =
             <*> unsignedInt <* comma
             <*> unsignedInt <* comma
             <*> unsignedInt
+
+-- | Parse a 'Common' record from the stream.
+parseCommon :: Parser Common
+parseCommon = do
+    kw "common"
+    Common <$> keyValue "lineHeight" unsignedInt
+           <*> keyValue "base" unsignedInt
+           <*> keyValue "scaleW" unsignedInt
+           <*> keyValue "scaleH" unsignedInt
+           <*> keyValue "pages" unsignedInt
+           <*> keyValue "packed" boolean
 
 -- | Parse a keyname and a value from the stream.
 keyValue :: String -> Parser a -> Parser a

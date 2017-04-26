@@ -67,8 +67,31 @@ data Spacing = Spacing
     , vertical   :: !Int
     } deriving (Eq, Show)
 
+-- | Common data for a bitmap font.
+-- See <http://www.angelcode.com/products/bmfont/doc/file_format.html>
 data Common = Common
-    deriving (Eq, Show)
+    { lineHeight :: !Int
+      -- ^ This is the distance in pixels between each line of text.
+
+    , base       :: !Int
+      -- ^ The number of pixels from the absolute top of the line
+      -- to the base of the characters.
+
+    , scaleW     :: !Int
+      -- ^ The width of the texture, normally used to scale the
+      -- x pos of the character image.
+
+    , scaleH     :: !Int
+      -- ^ The height of the texture, normally used to scale the
+      -- y pos of the character image.
+
+    , pages      :: !Int
+      -- ^ The number of texture pages included in the font.
+
+    , packed     :: !Bool
+      -- ^ Set to True if the monochrome characters have been packed
+      -- into each of the texture channels.
+    } deriving (Eq, Show)
 
 data Page = Page
     deriving (Eq, Show)
