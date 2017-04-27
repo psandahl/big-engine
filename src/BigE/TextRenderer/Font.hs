@@ -106,20 +106,39 @@ data Page = Page
 -- | Character data for a bitmap font.
 -- See <http://www.angelcode.com/products/bmfont/doc/file_format.html>
 data Character = Character
-    { charId :: !Int
+    { charId   :: !Int
       -- ^ The character id (ascii code).
 
-    , x      :: !Int
+    , x        :: !Int
       -- ^ The left position of the character image in the texture.
 
-    , y      :: !Int
+    , y        :: !Int
       -- The top position of the character image in the texture.
 
-    , width  :: !Int
+    , width    :: !Int
       -- ^ The width of the character image in the texture.
 
-    , height :: !Int
+    , height   :: !Int
       -- ^ The height of the character image in the texture.
+
+    , xOffset  :: !Int
+      -- ^ How much the current position should be offset when copying
+      -- the image from the texture to the screen.
+
+    , yOffset  :: !Int
+      -- ^ How much the current position should be offset when copying
+      -- the image from the texture to the screen.
+
+    , xAdvance :: !Int
+      -- ^ How much the current position should be advanced after
+      -- drawing the character.
+
+    , page     :: !Int
+      -- ^ The texture page where the character image is found.
+
+    , chnl     :: !Int
+      -- ^ The texture channel where the character image is found
+      -- (1 = blue, 2 = green, 4 = red, 8 = alpha, 15 = all channels).
     } deriving (Eq, Show)
 
 data Kerning = Kerning

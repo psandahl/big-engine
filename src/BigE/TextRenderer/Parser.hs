@@ -80,6 +80,11 @@ parseCharacter = do
               <*> keyValue "y" unsignedInt
               <*> keyValue "width" unsignedInt
               <*> keyValue "height" unsignedInt
+              <*> keyValue "xoffset" signedInt
+              <*> keyValue "yoffset" signedInt
+              <*> keyValue "xadvance" unsignedInt
+              <*> keyValue "page" unsignedInt
+              <*> keyValue "chnl" unsignedInt
 
 -- | Parse a keyname and a value from the stream.
 keyValue :: String -> Parser a -> Parser a

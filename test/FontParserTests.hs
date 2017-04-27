@@ -86,7 +86,15 @@ parsePage = do
 -- | Test parsing of 'Character' records.
 parseCharacter :: Assertion
 parseCharacter = do
-    Just (Character 65 0 1 512 512) @=?
+    Just (Character 65 0 1 512 512 1 56 100 0 0) @=?
         parseMaybe
             Parser.parseCharacter
-                "char id=65 x=0 y=1 width=512 height=512"
+                "char id=65 x=0 y=1 width=512 height=512 xoffset=1 \
+                \yoffset=56 xadvance=100 page=0 chnl=0"
+
+    -- With some spacing around the tokens.
+    Just (Character 65 0 1 512 512 1 56 100 0 0) @=?
+        parseMaybe
+            Parser.parseCharacter
+                "char id = 65 x = 0 y = 1 width = 512 height = 512 xoffset = 1 \
+                \yoffset = 56 xadvance = 100 page = 0 chnl = 0"
