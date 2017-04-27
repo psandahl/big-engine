@@ -6,13 +6,15 @@ module FontParserTests
     , parseCommon
     , parsePage
     , parseCharacter
+    , parseKerning
     ) where
 
 import           Test.HUnit
 import           Text.Megaparsec          (parseMaybe)
 
 import           BigE.TextRenderer.Font   (Character (..), Common (..),
-                                           Info (..), Padding (..), Page (..),
+                                           Info (..), Kerning (..),
+                                           Padding (..), Page (..),
                                            Spacing (..))
 import qualified BigE.TextRenderer.Parser as Parser
 
@@ -98,3 +100,9 @@ parseCharacter = do
             Parser.parseCharacter
                 "char id = 65 x = 0 y = 1 width = 512 height = 512 xoffset = 1 \
                 \yoffset = 56 xadvance = 100 page = 0 chnl = 0"
+
+-- | Test parsing of 'Kerning' records.
+parseKerning :: Assertion
+parseKerning =
+    Just (Kerning 1 2 3) @=?
+        parseMaybe Parser.parseKerning "kerning first=1 second=2 amount=3"

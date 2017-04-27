@@ -13,12 +13,14 @@ module BigE.TextRenderer.Parser
     , parseCommon
     , parsePage
     , parseCharacter
+    , parseKerning
     , keyValue
     ) where
 
 import           BigE.TextRenderer.Font          (Character (..), Common (..),
-                                                  Info (..), Padding (..),
-                                                  Page (..), Spacing (..))
+                                                  Info (..), Kerning (..),
+                                                  Padding (..), Page (..),
+                                                  Spacing (..))
 import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Text.Megaparsec
@@ -85,6 +87,14 @@ parseCharacter = do
               <*> keyValue "xadvance" unsignedInt
               <*> keyValue "page" unsignedInt
               <*> keyValue "chnl" unsignedInt
+
+-- | Parse a 'Kerning' record from the stream.
+parseKerning :: Parser Kerning
+parseKerning = do
+    kw "kerning"
+    Kerning <$> keyValue "first" unsignedInt
+            <*> keyValue "second" unsignedInt
+            <*> keyValue "amount" unsignedInt
 
 -- | Parse a keyname and a value from the stream.
 keyValue :: String -> Parser a -> Parser a

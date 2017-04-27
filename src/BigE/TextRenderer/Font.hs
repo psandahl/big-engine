@@ -141,5 +141,17 @@ data Character = Character
       -- (1 = blue, 2 = green, 4 = red, 8 = alpha, 15 = all channels).
     } deriving (Eq, Show)
 
+-- | Kerning data for a bitmap font.
+-- See <http://www.angelcode.com/products/bmfont/doc/file_format.html>
 data Kerning = Kerning
+    { first  :: !Int
+      -- ^ The first character id.
+
+    , second :: !Int
+      -- ^ The second character id.
+
+    , amount :: !Int
+      -- ^ How much the x position should be adjusted when drawing the
+      -- second character immediately following the first.
+    }
     deriving (Eq, Show)
