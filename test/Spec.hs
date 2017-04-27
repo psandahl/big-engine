@@ -35,6 +35,7 @@ testSuite =
         , testCase "Parse Page" parsePage
         , testCase "Parse Character" parseCharacter
         , testCase "Parse Kerning" parseKerning
+        , testCase "Parse Font Files" parseFontFile
         ]
     , testGroup "PickId tests"
         [ testCase "zeroPickId shall be zero" zeroValuedPickId

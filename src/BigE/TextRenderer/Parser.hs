@@ -7,7 +7,8 @@
 -- Portability: portable
 -- Language: Haskell2010
 module BigE.TextRenderer.Parser
-    ( parseInfo
+    ( parseFontFile
+    , parseInfo
     , parseSpacing
     , parsePadding
     , parseCommon
@@ -18,14 +19,22 @@ module BigE.TextRenderer.Parser
     ) where
 
 import           BigE.TextRenderer.Font          (Character (..), Common (..),
-                                                  Info (..), Kerning (..),
-                                                  Padding (..), Page (..),
-                                                  Spacing (..))
+                                                  FontFile (..), Info (..),
+                                                  Kerning (..), Padding (..),
+                                                  Page (..), Spacing (..))
 import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Text.Megaparsec
 import           Text.Megaparsec.ByteString.Lazy
 import qualified Text.Megaparsec.Lexer           as Lexer
+
+-- | Parse a 'FontFile' from the stream.
+parseFontFile :: Parser FontFile
+parseFontFile =
+    FontFile <$> parseInfo
+             <*> parseCommon
+             <*> parsePage
+             <*> (skipCharCount *> many parseCharacter)
 
 -- | Parse an 'Info' record from the stream.
 parseInfo :: Parser Info
@@ -95,6 +104,11 @@ parseKerning = do
     Kerning <$> keyValue "first" unsignedInt
             <*> keyValue "second" unsignedInt
             <*> keyValue "amount" unsignedInt
+
+skipCharCount :: Parser ()
+skipCharCount = do
+    kw "chars"
+    void $ keyValue "count" unsignedInt
 
 -- | Parse a keyname and a value from the stream.
 keyValue :: String -> Parser a -> Parser a

@@ -7,7 +7,8 @@
 -- Portability: portable
 -- Language: Haskell2010
 module BigE.TextRenderer.Font
-    ( Info (..)
+    ( FontFile (..)
+    , Info (..)
     , Padding (..)
     , Spacing (..)
     , Common (..)
@@ -15,6 +16,16 @@ module BigE.TextRenderer.Font
     , Character (..)
     , Kerning (..)
     ) where
+
+-- | Representation of a file with font data. Some restrictions though:
+-- Only one page fonts are supported.
+-- No channel stuff.
+data FontFile = FontFile
+    { info       :: !Info
+    , common     :: !Common
+    , page       :: !Page
+    , characters :: ![Character]
+    } deriving (Eq, Show)
 
 -- | Info data for a bitmap font.
 -- See <http://www.angelcode.com/products/bmfont/doc/file_format.html>
@@ -133,7 +144,7 @@ data Character = Character
       -- ^ How much the current position should be advanced after
       -- drawing the character.
 
-    , page     :: !Int
+    , pageNo   :: !Int
       -- ^ The texture page where the character image is found.
 
     , chnl     :: !Int

@@ -23,6 +23,7 @@ test-suite big-engine-test
                        VertexTests
   build-depends:       base >= 4.7 && < 5
                      , big-engine
+                     , bytestring
                      , HUnit
                      , HUnit-approx
                      , linear
