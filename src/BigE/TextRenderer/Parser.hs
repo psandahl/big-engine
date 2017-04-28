@@ -10,7 +10,7 @@ module BigE.TextRenderer.Parser
     ( parseFontFile
     ) where
 
-import           BigE.TextRenderer.Font          (Character (..), Common (..),
+import           BigE.TextRenderer.Types         (Character (..), Common (..),
                                                   FontFile (..), Info (..),
                                                   Kerning (..), Padding (..),
                                                   Page (..), Spacing (..))
