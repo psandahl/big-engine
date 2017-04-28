@@ -35,6 +35,7 @@ parseFontFile =
              <*> parseCommon
              <*> parsePage
              <*> (skipCharCount *> many parseCharacter)
+             <*> (skipKerningsCount *> many parseKerning)
 
 -- | Parse an 'Info' record from the stream.
 parseInfo :: Parser Info
@@ -103,11 +104,16 @@ parseKerning = do
     kw "kerning"
     Kerning <$> keyValue "first" unsignedInt
             <*> keyValue "second" unsignedInt
-            <*> keyValue "amount" unsignedInt
+            <*> keyValue "amount" signedInt
 
 skipCharCount :: Parser ()
 skipCharCount = do
     kw "chars"
+    void $ keyValue "count" unsignedInt
+
+skipKerningsCount :: Parser ()
+skipKerningsCount = do
+    kw "kernings"
     void $ keyValue "count" unsignedInt
 
 -- | Parse a keyname and a value from the stream.

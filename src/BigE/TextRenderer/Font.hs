@@ -21,10 +21,11 @@ module BigE.TextRenderer.Font
 -- Only one page fonts are supported.
 -- No channel stuff.
 data FontFile = FontFile
-    { info       :: !Info
-    , common     :: !Common
-    , page       :: !Page
-    , characters :: ![Character]
+    { info         :: !Info
+    , common       :: !Common
+    , page         :: !Page
+    , characters   :: ![Character]
+    , kerningPairs :: ![Kerning]
     } deriving (Eq, Show)
 
 -- | Info data for a bitmap font.

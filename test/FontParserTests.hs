@@ -145,7 +145,48 @@ fontFileRecord =
         , page = Page { pageId = 0
                       , file = "verdana.png"
                       }
-        , characters = []
+        , characters =
+            [ Character
+                { charId = 0
+                , x = 393
+                , y = 142
+                , width = 62
+                , height = 62
+                , xOffset = 6
+                , yOffset = 16
+                , xAdvance = 78
+                , pageNo = 0
+                , chnl = 0
+                }
+            , Character
+                { charId = 10
+                , x = 0
+                , y = 0
+                , width = 0
+                , height = 0
+                , xOffset = -3
+                , yOffset = 0
+                , xAdvance = 4
+                , pageNo = 0
+                , chnl = 0
+                }
+            , Character
+                { charId = 32
+                , x = 0
+                , y = 0
+                , width = 0
+                , height = 0
+                , xOffset = -3
+                , yOffset = 0
+                , xAdvance = 30
+                , pageNo = 0
+                , chnl = 0
+                }
+            ]
+        , kerningPairs =
+            [ Kerning { first = 88, second = 45, amount = -3 }
+            , Kerning { first = 45, second = 97, amount = -1 }
+            ]
         }
 
 fontFile :: ByteString
@@ -158,4 +199,7 @@ fontFile = pack $ unlines
     , "char id=0       x=393  y=142  width=62   height=62   xoffset=6    yoffset=16   xadvance=78   page=0    chnl=0"
     , "char id=10      x=0    y=0    width=0    height=0    xoffset=-3   yoffset=0    xadvance=4    page=0    chnl=0"
     , "char id=32      x=0    y=0    width=0    height=0    xoffset=-3   yoffset=0    xadvance=30   page=0    chnl=0"
+    , "kernings count=2"
+    , "kerning first=88 second=45 amount=-3"
+    , "kerning first=45 second=97 amount=-1"
     ]
