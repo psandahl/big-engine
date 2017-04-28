@@ -28,14 +28,7 @@ testSuite =
         , testCase "vertP_N_Tx_encodeDecode equals" vertP_N_Tx_encodeDecode
         ]
     , testGroup "Font Parser tests"
-        [ testCase "Parse Info" parseInfo
-        , testCase "Parse Spacing" parseSpacing
-        , testCase "Parse Padding" parsePadding
-        , testCase "Parse Common" parseCommon
-        , testCase "Parse Page" parsePage
-        , testCase "Parse Character" parseCharacter
-        , testCase "Parse Kerning" parseKerning
-        , testCase "Parse Font Files" parseFontFile
+        [ testCase "Parse Font Files" parseFontFile
         ]
     , testGroup "PickId tests"
         [ testCase "zeroPickId shall be zero" zeroValuedPickId

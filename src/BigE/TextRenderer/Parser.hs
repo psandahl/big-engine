@@ -8,14 +8,6 @@
 -- Language: Haskell2010
 module BigE.TextRenderer.Parser
     ( parseFontFile
-    , parseInfo
-    , parseSpacing
-    , parsePadding
-    , parseCommon
-    , parsePage
-    , parseCharacter
-    , parseKerning
-    , keyValue
     ) where
 
 import           BigE.TextRenderer.Font          (Character (..), Common (..),
