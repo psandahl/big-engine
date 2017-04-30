@@ -39,7 +39,7 @@ parseFontFile =
              <*> parseCommon
              <*> parsePage
              <*> (skipCharCount *> many parseCharacter)
-             <*> (skipKerningsCount *> many parseKerning)
+             <*> (optional skipKerningsCount *> many parseKerning)
 
 -- | Parse an 'Info' record from the stream.
 parseInfo :: Parser Info

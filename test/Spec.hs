@@ -29,6 +29,7 @@ testSuite =
         ]
     , testGroup "Font Parser tests"
         [ testCase "Parse Font Files" parseFontFile
+        , testCase "Parse Font Files - no kerning" parseFontFileNoKerning
         ]
     , testGroup "PickId tests"
         [ testCase "zeroPickId shall be zero" zeroValuedPickId

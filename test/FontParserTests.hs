@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 module FontParserTests
     ( parseFontFile
+    , parseFontFileNoKerning
     ) where
 
 import           Test.HUnit
@@ -18,6 +19,11 @@ import           Data.ByteString.Lazy.Char8 (ByteString, pack)
 parseFontFile :: Assertion
 parseFontFile =
     Right fontFileRecord @=? parse Parser.parseFontFile "" fontFile
+
+-- | Test of a file without kerning information.
+parseFontFileNoKerning :: Assertion
+parseFontFileNoKerning =
+    Right fontFileRecordNoKerning @=? parse Parser.parseFontFile "" fontFileNoKerning
 
 fontFileRecord :: FontFile
 fontFileRecord =
@@ -94,6 +100,10 @@ fontFileRecord =
             ]
         }
 
+fontFileRecordNoKerning :: FontFile
+fontFileRecordNoKerning =
+    fontFileRecord { kerningPairs = [] }
+
 fontFile :: ByteString
 fontFile = pack $ unlines
     [ "info face=\"Verdana\" size=75 bold=0 italic=0 charset=\"\" unicode=0 \
@@ -107,4 +117,16 @@ fontFile = pack $ unlines
     , "kernings count=2"
     , "kerning first=88 second=45 amount=-3"
     , "kerning first=45 second=97 amount=-1"
+    ]
+
+fontFileNoKerning :: ByteString
+fontFileNoKerning = pack $ unlines
+    [ "info face=\"Verdana\" size=75 bold=0 italic=0 charset=\"\" unicode=0 \
+          \stretchH=100 smooth=1 aa=1 padding=3,3,3,3 spacing=-2,-2"
+    , "common lineHeight=95 base=75 scaleW=512 scaleH=512 pages=1 packed=0"
+    , "page id=0 file=\"verdana.png\""
+    , "chars count=3"
+    , "char id=0       x=393  y=142  width=62   height=62   xoffset=6    yoffset=16   xadvance=78   page=0    chnl=0"
+    , "char id=10      x=0    y=0    width=0    height=0    xoffset=-3   yoffset=0    xadvance=4    page=0    chnl=0"
+    , "char id=32      x=0    y=0    width=0    height=0    xoffset=-3   yoffset=0    xadvance=30   page=0    chnl=0"
     ]
