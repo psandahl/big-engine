@@ -6,11 +6,12 @@ module FontParserTests
 import           Test.HUnit
 import           Text.Megaparsec
 
+import           BigE.TextRenderer.Parser   (FontFile (..))
 import qualified BigE.TextRenderer.Parser   as Parser
 import           BigE.TextRenderer.Types    (Character (..), Common (..),
-                                             FontFile (..), Info (..),
-                                             Kerning (..), Padding (..),
-                                             Page (..), Spacing (..))
+                                             Info (..), Kerning (..),
+                                             Padding (..), Page (..),
+                                             Spacing (..))
 import           Data.ByteString.Lazy.Char8 (ByteString, pack)
 
 -- | Test parsing of 'FontFile' records.

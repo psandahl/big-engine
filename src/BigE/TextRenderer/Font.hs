@@ -11,33 +11,36 @@ module BigE.TextRenderer.Font
     , fromFile
     ) where
 
-import           BigE.TextRenderer.Parser   (parseFontFile)
-import           BigE.TextRenderer.Types    (FontFile)
+import qualified BigE.TextRenderer.Parser   as Parser
+import           BigE.TextRenderer.Types    (Info)
 import           Control.Exception          (SomeException, try)
 import           Control.Monad.IO.Class     (MonadIO, liftIO)
 import           Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS
+--import           Data.HashMap.Strict        (HashMap)
+--import qualified Data.HashMap.Strict        as HashMap
 import           Text.Megaparsec            (parse)
 
 data Font = Font
-    { foo :: !Int
+    { info :: !Info
     } deriving Show
 
 -- | Read 'Font' data from file.
-fromFile :: MonadIO m => FilePath -> m (Either String FontFile)
+fromFile :: MonadIO m => FilePath -> m (Either String Font)
 fromFile file = do
     eFnt <- liftIO $ readFontFromFile file
     case eFnt of
-        Right fnt -> return $ Right fnt
+        Right fnt -> return $
+            Right Font { info = Parser.info fnt }
         Left err  -> return $ Left err
 
 -- | Get a 'FontFile' from external file.
-readFontFromFile :: FilePath -> IO (Either String FontFile)
+readFontFromFile :: FilePath -> IO (Either String Parser.FontFile)
 readFontFromFile file = do
     eBs <- tryRead file
     case eBs of
         Right bs ->
-            case parse parseFontFile file bs of
+            case parse Parser.parseFontFile file bs of
                 Right fnt -> return $ Right fnt
                 Left err  -> return $ Left (show err)
         Left e -> return $ Left (show e)

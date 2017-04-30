@@ -7,18 +7,30 @@
 -- Portability: portable
 -- Language: Haskell2010
 module BigE.TextRenderer.Parser
-    ( parseFontFile
+    ( FontFile (..)
+    , parseFontFile
     ) where
 
 import           BigE.TextRenderer.Types         (Character (..), Common (..),
-                                                  FontFile (..), Info (..),
-                                                  Kerning (..), Padding (..),
-                                                  Page (..), Spacing (..))
+                                                  Info (..), Kerning (..),
+                                                  Padding (..), Page (..),
+                                                  Spacing (..))
 import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Text.Megaparsec
 import           Text.Megaparsec.ByteString.Lazy
 import qualified Text.Megaparsec.Lexer           as Lexer
+
+-- | Representation of a file with font data. Some restrictions though:
+-- Only one page fonts are supported.
+-- No channel stuff.
+data FontFile = FontFile
+    { info         :: !Info
+    , common       :: !Common
+    , page         :: !Page
+    , characters   :: ![Character]
+    , kerningPairs :: ![Kerning]
+    } deriving (Eq, Show)
 
 -- | Parse a 'FontFile' from the stream.
 parseFontFile :: Parser FontFile
