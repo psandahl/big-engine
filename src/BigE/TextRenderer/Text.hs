@@ -47,7 +47,8 @@ init fnt str = do
 
 mkCharacterBoxVertices :: Font -> String -> Vector Vertex
 mkCharacterBoxVertices fnt str =
-    let p2c = pixToCoord (lineHeight $ common fnt)
+    let vert = pixToCoord (lineHeight $ common fnt)
+        tex = pixToCoord (scaleW $ common fnt) -- Assume square texture.
         chars = characters fnt
     in snd $ foldl' (\(cursor, vec) ascii ->
                         case HashMap.lookup (ord ascii) chars of
@@ -55,8 +56,8 @@ mkCharacterBoxVertices fnt str =
                             -- Character found. Make a box and advance the
                             -- the cursor.
                             Just char ->
-                                let box = mkCharacterBox cursor p2c char
-                                    cursor' = cursor + p2c (xAdvance char)
+                                let box = mkCharacterBox cursor vert tex char
+                                    cursor' = cursor + vert (xAdvance char)
                                     vec' = Vector.concat [vec, box]
                                 in (cursor', vec')
 
@@ -65,17 +66,42 @@ mkCharacterBoxVertices fnt str =
                     ) (0, Vector.empty) str
 
 -- | Construct one single character box.
-mkCharacterBox :: Cursor -> PixToCoord -> Character -> Vector Vertex
-mkCharacterBox cursor p2c char =
-    let xStart = cursor + p2c (xOffset char)
-        xStop = xStart + p2c (width char)
-        yTop = negate (p2c (yOffset char))
-        yBottom = yTop - p2c (height char)
+mkCharacterBox :: Cursor -> PixToCoord -> PixToCoord -> Character -> Vector Vertex
+mkCharacterBox cursor vert tex char =
+    -- Start calculate the coordinates for the square surrounding the
+    -- character. Vertice coords are normalized to the line height which
+    -- is interpreted as the length one.
+    let xStart = cursor + vert (xOffset char)
+        xStop = xStart + vert (width char)
+        yTop = negate (vert (yOffset char))
+        yBottom = yTop - vert (height char)
+
+        -- Then calculate the texture coordinates. Texture coords are normalized
+        -- to the dimensions of the texture atlas for the font.
+        xStartTex = tex (x char)
+        xStopTex = xStartTex + tex (width char)
+        yTopTex = tex (y char)
+        yBottomTex = yTopTex + tex (height char)
     in Vector.fromList
-           [ Vertex { position = V3 xStop yTop 0, texCoord = V2 0 0 }
-           , Vertex { position = V3 xStart yTop 0, texCoord = V2 0 0 }
-           , Vertex { position = V3 xStart yBottom 0, texCoord = V2 0 0 }
-           , Vertex { position = V3 xStop yBottom 0, texCoord = V2 0 0 }
+           [ -- Upper right corner.
+             Vertex { position = V3 xStop yTop 0
+                    , texCoord = V2 xStopTex yTopTex
+                    }
+
+             -- Upper left corner.
+           , Vertex { position = V3 xStart yTop 0
+                    , texCoord = V2 xStartTex yTopTex
+                    }
+
+             -- Lower left corner.
+           , Vertex { position = V3 xStart yBottom 0
+                    , texCoord = V2 xStartTex yBottomTex
+                    }
+
+             -- Lower right corner.
+           , Vertex { position = V3 xStop yBottom 0
+                    , texCoord = V2 xStopTex yBottomTex
+                    }
            ]
 
 -- | Make vertex indices for the specified number of boxes.
