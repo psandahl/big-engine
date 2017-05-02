@@ -54,6 +54,7 @@ library
                        BigE.Program
                        BigE.Texture
                        BigE.Types
+                       BigE.Util
   other-modules:       BigE.Internal.GLResources
                        BigE.Runtime.Configuration
                        BigE.Runtime.Callback
