@@ -6,6 +6,7 @@ import           Test.Framework.Providers.HUnit (testCase)
 import           FontParserTests
 import           MathTests
 import           PickIdTests
+import           UtilTests
 import           VertexTests
 
 main :: IO ()
@@ -37,7 +38,11 @@ testSuite =
         , testCase "literalPickId shall construct correctly" pickIdConstruction
         ]
     , testGroup "Math tests - angle conversions"
-        [ testCase "Conversion to radians " toRadiansConversion
+        [ testCase "Conversion to radians" toRadiansConversion
         , testCase "Conversion to degrees" toDegreesConversion
+        ]
+    , testGroup "Util tests - either tuple bundling"
+        [ testCase "eitherTwo" eitherTwo
+        , testCase "eitherThree" eitherThree
         ]
     ]
