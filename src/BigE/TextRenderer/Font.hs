@@ -9,6 +9,8 @@
 module BigE.TextRenderer.Font
     ( Font (..)
     , fromFile
+    , enable
+    , disable
     ) where
 
 import qualified BigE.TextRenderer.Parser   as Parser
@@ -36,17 +38,14 @@ data Font = Font
     , fontAtlas  :: !Texture
     } deriving Show
 
--- | Read 'Font' data from file.
+-- | Read 'Font' data from file and read the referenced texture file.
 fromFile :: MonadIO m => FilePath -> m (Either String Font)
 fromFile filePath = do
     eFnt <- liftIO $ readFontFromFile filePath
     case eFnt of
-
         Right fnt -> do
-
             eFontAtlas <- readTextureFromFile filePath fnt
             case eFontAtlas of
-
                 Right fontAtlas' ->
                     return $
                         Right Font
@@ -63,6 +62,14 @@ fromFile filePath = do
     where
         keyValueList = map (\char -> (charId char, char))
 
+-- | Enable to font. I.e. bind the texture to the given texture unit.
+enable :: MonadIO m => Int -> Font -> m ()
+enable unit = Texture.enable2D unit . fontAtlas
+
+-- | Disable the font. I.e. disable the texture at the given texture unit.
+disable :: MonadIO m => Int -> m ()
+disable = Texture.disable2D
+
 -- | Get a 'FontFile' from external file.
 readFontFromFile :: FilePath -> IO (Either String Parser.FontFile)
 readFontFromFile filePath = do
@@ -77,6 +84,7 @@ readFontFromFile filePath = do
         tryRead :: FilePath -> IO (Either SomeException ByteString)
         tryRead = try . BS.readFile
 
+-- | Get a 'Texture' from external file.
 readTextureFromFile :: MonadIO m => FilePath -> Parser.FontFile
                     -> m (Either String Texture)
 readTextureFromFile filePath fntFile = do
