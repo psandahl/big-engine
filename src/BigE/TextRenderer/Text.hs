@@ -7,12 +7,16 @@
 -- Portability: portable
 -- Language: Haskell2010
 module BigE.TextRenderer.Text
-    ( Text (mesh)
+    ( Text (..)
     , init
+    , enable
+    , disable
+    , delete
     ) where
 
 import           BigE.Attribute.Vert_P_Tx (Vertex (..))
-import           BigE.Mesh                (Mesh, fromVector)
+import           BigE.Mesh                (Mesh)
+import qualified BigE.Mesh                as Mesh
 import           BigE.TextRenderer.Font   (Font (..))
 import           BigE.TextRenderer.Types  (Character (..), Common (..))
 import           BigE.Types               (BufferUsage (..))
@@ -40,10 +44,22 @@ type PixToCoord = Int -> GLfloat
 -- | Initialize the text using a 'Font' and a string.
 init :: MonadIO m => Font -> String -> m Text
 init fnt str = do
-    mesh' <- fromVector DynamicDraw
-                        (mkCharacterBoxVertices fnt str)
-                        (mkIndices $ length str)
+    mesh' <- Mesh.fromVector DynamicDraw
+                             (mkCharacterBoxVertices fnt str)
+                             (mkIndices $ length str)
     return Text { font = fnt, mesh = mesh', string = str }
+
+-- | Enable the 'Text'. I.e. enable the VAO for the text's mesh.
+enable :: MonadIO m => Text -> m ()
+enable = Mesh.enable . mesh
+
+-- | Disable the 'Text'. I.e. disable the currently bound VAO
+disable :: MonadIO m => m ()
+disable = Mesh.disable
+
+-- | Delete the 'Text'. I.e. delete the text's mesh.
+delete :: MonadIO m => Text -> m ()
+delete = Mesh.delete . mesh
 
 mkCharacterBoxVertices :: Font -> String -> Vector Vertex
 mkCharacterBoxVertices fnt str =
