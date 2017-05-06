@@ -11,6 +11,7 @@ module BigE.TextRenderer.Font
     , fromFile
     , enable
     , disable
+    , delete
     ) where
 
 import qualified BigE.TextRenderer.Parser   as Parser
@@ -69,6 +70,10 @@ enable unit = Texture.enable2D unit . fontAtlas
 -- | Disable the font. I.e. disable the texture at the given texture unit.
 disable :: MonadIO m => Int -> m ()
 disable = Texture.disable2D
+
+-- | Delete the font. I.e. delete its texture.
+delete :: MonadIO m => Font -> m ()
+delete = Texture.delete . fontAtlas
 
 -- | Get a 'FontFile' from external file.
 readFontFromFile :: FilePath -> IO (Either String Parser.FontFile)
