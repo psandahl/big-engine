@@ -32,9 +32,10 @@ import           Prelude                  hiding (init)
 
 -- | Representation of a drawable piece of text.
 data Text = Text
-    { font   :: !Font
-    , mesh   :: !Mesh
-    , string :: !String
+    { font      :: !Font
+    , mesh      :: !Mesh
+    , gridWidth :: !GLfloat
+    , string    :: !String
     }
     deriving Show
 
@@ -44,10 +45,11 @@ type PixToCoord = Int -> GLfloat
 -- | Initialize the text using a 'Font' and a string.
 init :: MonadIO m => Font -> String -> m Text
 init fnt str = do
-    mesh' <- Mesh.fromVector DynamicDraw
-                             (mkCharacterBoxVertices fnt str)
-                             (mkIndices $ length str)
-    return Text { font = fnt, mesh = mesh', string = str }
+    let verts = mkCharacterBoxVertices fnt str
+        indices = mkIndices $ length str
+        gridWidth' = getGridWidth verts
+    mesh' <- Mesh.fromVector DynamicDraw verts indices
+    return Text { font = fnt, mesh = mesh', gridWidth = gridWidth', string = str }
 
 -- | Enable the 'Text'. I.e. enable the VAO for the text's mesh.
 enable :: MonadIO m => Text -> m ()
@@ -132,3 +134,12 @@ mkIndices num =
 -- represents the coordinate length of 1, is provided.
 pixToCoord :: Int -> Int -> GLfloat
 pixToCoord unit len = fromIntegral len / fromIntegral unit
+
+-- | Get the biggest x-value from the last character box. It represents the
+-- grid width of the text.
+getGridWidth :: Vector Vertex -> GLfloat
+getGridWidth vec
+    | not (Vector.null vec) =
+        let Vertex {position = V3 outmostX _ _} = Vector.last vec
+        in outmostX
+    | otherwise = 0
