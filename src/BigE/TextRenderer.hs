@@ -9,17 +9,24 @@
 -- Language: Haskell2010
 module BigE.TextRenderer
     ( TextRenderer (..)
+    , RenderParams (..)
     , init
     , render
     , delete
     ) where
 
 import qualified BigE.Program           as Program
-import           BigE.Runtime           (Render)
+import           BigE.Runtime           (Render, displayDimensions)
+import qualified BigE.TextRenderer.Font as Font
 import           BigE.TextRenderer.Text (Text (..))
-import           BigE.Types             (Location, Program, ShaderType (..))
+import qualified BigE.TextRenderer.Text as Text
+import           BigE.Types             (Location, Program, ShaderType (..),
+                                         setUniform)
 import           Control.Monad.IO.Class (MonadIO)
 import           Data.ByteString.Char8  (ByteString)
+import           Graphics.GL            (GLfloat, GLint)
+import qualified Graphics.GL            as GL
+import           Linear                 (M44, V3 (..), V4 (..), (!*!))
 import           Prelude                hiding (init)
 
 data TextRenderer = TextRenderer
@@ -27,6 +34,10 @@ data TextRenderer = TextRenderer
     , transformLoc :: !Location
     , fontColorLoc :: !Location
     , fontAtlasLoc :: !Location
+    } deriving Show
+
+data RenderParams = RenderParams
+    { size :: !Int
     } deriving Show
 
 -- | Initialize the 'TextRenderer'.
@@ -56,8 +67,48 @@ init = do
 delete :: MonadIO m => TextRenderer -> m ()
 delete = Program.delete . program
 
-render :: Text -> TextRenderer -> Render state ()
-render = undefined
+-- | Render the 'Text' using the 'TextRenderer'.
+render :: Text -> RenderParams -> TextRenderer -> Render state ()
+render text params textRenderer = do
+    (width, height) <- displayDimensions
+    let aspectRatio = fromIntegral width / fromIntegral height
+        size' = fromIntegral $ clamp 1 30 $ size params
+        scale = 1 / (31 - size')
+        transform = textTranslate !*! fontScaling scale aspectRatio
+
+    GL.glEnable GL.GL_BLEND
+    GL.glBlendFunc GL.GL_SRC_ALPHA GL.GL_ONE_MINUS_SRC_ALPHA
+
+    Program.enable (program textRenderer)
+    Text.enable text
+    Font.enable 0 (font text)
+
+    setUniform (transformLoc textRenderer) transform
+    setUniform (fontColorLoc textRenderer) (V3 1 0 0 :: V3 GLfloat)
+    setUniform (fontAtlasLoc textRenderer) (0 :: GLint)
+
+    Text.render text
+
+    Font.disable 0
+    Text.disable
+    Program.disable
+
+fontScaling :: GLfloat -> GLfloat -> M44 GLfloat
+fontScaling scale aspectRatio =
+    V4 (V4 scale 0 0 0)
+       (V4 0 (scale * aspectRatio) 0 0)
+       (V4 0 0 scale 0)
+       (V4 0 0 0 1)
+
+textTranslate :: M44 GLfloat
+textTranslate =
+    V4 (V4 1 0 0 (-1))
+       (V4 0 1 0 1)
+       (V4 0 0 1 0)
+       (V4 0 0 0 1)
+
+clamp :: Ord a => a -> a -> a -> a
+clamp mn mx = min mx . max mn
 
 vertexShader :: ByteString
 vertexShader =

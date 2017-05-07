@@ -12,6 +12,7 @@ module BigE.TextRenderer.Text
     , enable
     , disable
     , delete
+    , render
     ) where
 
 import           BigE.Attribute.Vert_P_Tx (Vertex (..))
@@ -19,7 +20,7 @@ import           BigE.Mesh                (Mesh)
 import qualified BigE.Mesh                as Mesh
 import           BigE.TextRenderer.Font   (Font (..))
 import           BigE.TextRenderer.Types  (Character (..), Common (..))
-import           BigE.Types               (BufferUsage (..))
+import           BigE.Types               (BufferUsage (..), Primitive (..))
 import           Control.Monad.IO.Class   (MonadIO)
 import           Data.Char                (ord)
 import qualified Data.HashMap.Strict      as HashMap
@@ -62,6 +63,10 @@ disable = Mesh.disable
 -- | Delete the 'Text'. I.e. delete the text's mesh.
 delete :: MonadIO m => Text -> m ()
 delete = Mesh.delete . mesh
+
+-- | Render the 'Text'.
+render :: MonadIO m => Text -> m ()
+render = Mesh.render Triangles . mesh
 
 mkCharacterBoxVertices :: Font -> String -> Vector Vertex
 mkCharacterBoxVertices fnt str =
