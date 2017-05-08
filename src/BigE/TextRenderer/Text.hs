@@ -9,6 +9,7 @@
 module BigE.TextRenderer.Text
     ( Text (..)
     , init
+    , update
     , enable
     , disable
     , delete
@@ -43,7 +44,7 @@ data Text = Text
 type Cursor = GLfloat
 type PixToCoord = Int -> GLfloat
 
--- | Initialize the text using a 'Font' and a string.
+-- | Initialize the 'Text' using a 'Font' and a string.
 init :: MonadIO m => Font -> String -> m Text
 init fnt str = do
     let verts = mkCharacterBoxVertices fnt str
@@ -51,6 +52,15 @@ init fnt str = do
         gridWidth' = getGridWidth verts
     mesh' <- Mesh.fromVector DynamicDraw verts indices
     return Text { font = fnt, mesh = mesh', gridWidth = gridWidth', string = str }
+
+-- | Update the 'Text' with a new string.
+update :: MonadIO m => String -> Text -> m Text
+update str text = do
+    let verts = mkCharacterBoxVertices (font text) str
+        indices = mkIndices $ length str
+        gridWidth' = getGridWidth verts
+    mesh' <- Mesh.update verts indices (mesh text)
+    return text { mesh = mesh', gridWidth = gridWidth', string = str }
 
 -- | Enable the 'Text'. I.e. enable the VAO for the text's mesh.
 enable :: MonadIO m => Text -> m ()
