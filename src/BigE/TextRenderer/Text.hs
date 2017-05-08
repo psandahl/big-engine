@@ -54,6 +54,7 @@ init fnt str = do
     return Text { font = fnt, mesh = mesh', gridWidth = gridWidth', string = str }
 
 -- | Update the 'Text' with a new string.
+-- NOTE: The new string must not be longer than the original string.
 update :: MonadIO m => String -> Text -> m Text
 update str text = do
     let verts = mkCharacterBoxVertices (font text) str

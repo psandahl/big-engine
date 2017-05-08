@@ -44,6 +44,7 @@ fromVector bufferUsage vertices indices' = do
     return Mesh { vao = vao', vbo = vbo', indices = indices' }
 
 -- | Replace the entire content of the mesh. The new mesh is returned.
+-- NOTE: The new data must not be larger than the original content.
 update :: (Storable a, MonadIO m) => Vector a -> Vector GLuint -> Mesh -> m Mesh
 update vertices indices' mesh = do
     unless (Vector.null vertices) $ do
