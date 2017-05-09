@@ -54,6 +54,7 @@ library
                        BigE.Runtime
                        BigE.Program
                        BigE.Texture
+                       BigE.TexturedFramebuffer
                        BigE.Types
                        BigE.Util
   other-modules:       BigE.Internal.GLResources
