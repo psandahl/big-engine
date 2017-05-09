@@ -9,8 +9,10 @@
 module BigE.TexturedFramebuffer
     ( TexturedFramebuffer (..)
     , init
-    , enable
-    , disable
+    , enableDraw
+    , enableRead
+    , disableDraw
+    , disableRead
     , delete
     ) where
 
@@ -28,20 +30,20 @@ import           Prelude                   hiding (init)
 
 -- | A Framebuffer with color and depth attachements as textures.
 data TexturedFramebuffer = TexturedFramebuffer
-    { frameBuffer :: !Framebuffer
+    { framebuffer :: !Framebuffer
     , color       :: !Texture
     , depth       :: !Texture
     } deriving Show
 
 -- | Initialize the 'Framebuffer' and 'Texture' resources needed.
-init :: MonadIO m => Int -> Int -> m (Framebuffer, Texture, Texture)
+init :: MonadIO m => Int -> Int -> m TexturedFramebuffer
 init width height = do
     -- Create the frame buffer object.
-    frameBuffer'@(Framebuffer fbo) <- genFramebuffer
+    framebuffer'@(Framebuffer fbo) <- genFramebuffer
     GL.glBindFramebuffer GL.GL_FRAMEBUFFER fbo
 
     -- Create the color texture and attach it to the frame buffer.
-    colorTexture'@(Texture cTex) <- genTexture
+    color'@(Texture cTex) <- genTexture
     GL.glBindTexture GL.GL_TEXTURE_2D cTex
     GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB8)
                     (fromIntegral width) (fromIntegral height)
@@ -51,7 +53,7 @@ init width height = do
                               GL.GL_TEXTURE_2D cTex 0
 
     -- Create the depth texture and attach it to the frame buffer.
-    depthTexture'@(Texture dTex) <- genTexture
+    depth'@(Texture dTex) <- genTexture
     GL.glBindTexture GL.GL_TEXTURE_2D dTex
     GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_DEPTH_COMPONENT)
                     (fromIntegral width) (fromIntegral height)
@@ -74,7 +76,11 @@ init width height = do
     GL.glBindTexture GL.GL_TEXTURE_2D 0
     GL.glBindFramebuffer GL.GL_FRAMEBUFFER 0
 
-    return (frameBuffer', colorTexture', depthTexture')
+    return
+        TexturedFramebuffer { framebuffer = framebuffer'
+                            , color = color'
+                            , depth = depth'
+                            }
     where
       configureTexture = do
         GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint WrapClampToEdge)
@@ -82,20 +88,34 @@ init width height = do
         GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint MinNearest)
         GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint MagNearest)
 
--- | Enable the framebuffer. I.e. set it as the current target for rendering.
-enable :: MonadIO m => TexturedFramebuffer -> m ()
-enable fb = do
-    let Framebuffer fbo = frameBuffer fb
+-- | Enable the framebuffer for drawing. I.e. set it as the current
+-- target for rendering.
+enableDraw :: MonadIO m => TexturedFramebuffer -> m ()
+enableDraw fb = do
+    let Framebuffer fbo = framebuffer fb
     GL.glBindFramebuffer GL.GL_DRAW_FRAMEBUFFER fbo
+
+-- | Enable the framebuffer for reading.
+enableRead :: MonadIO m => TexturedFramebuffer -> m ()
+enableRead fb = do
+    let Framebuffer fbo = framebuffer fb
+    GL.glBindFramebuffer GL.GL_READ_FRAMEBUFFER fbo
+    GL.glReadBuffer GL.GL_COLOR_ATTACHMENT0
 
 -- | Disable the framebuffer and re-install the default framebuffer as
 -- target for rendering.
-disable :: MonadIO m => m ()
-disable = GL.glBindFramebuffer GL.GL_DRAW_FRAMEBUFFER 0
+disableDraw :: MonadIO m => m ()
+disableDraw = GL.glBindFramebuffer GL.GL_DRAW_FRAMEBUFFER 0
+
+-- | Disable the framebuffer for reading.
+disableRead :: MonadIO m => m ()
+disableRead = do
+    GL.glReadBuffer GL.GL_NONE
+    GL.glBindFramebuffer GL.GL_READ_FRAMEBUFFER 0
 
 -- | Delete the Framebuffer.
 delete :: MonadIO m => TexturedFramebuffer -> m ()
 delete fb = do
     Texture.delete $ color fb
     Texture.delete $ depth fb
-    deleteFramebuffer $ frameBuffer fb
+    deleteFramebuffer $ framebuffer fb

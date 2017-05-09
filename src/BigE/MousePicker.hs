@@ -9,7 +9,7 @@
 -- Portability: portable
 -- Language: Haskell2010
 module BigE.MousePicker
-    ( MousePicker (colorTexture)
+    ( MousePicker (framebuffer)
     , PickId
     , PickObject (..)
     , Pickable (..)
@@ -19,29 +19,23 @@ module BigE.MousePicker
     , literalPickId
     , init
     , resize
-    , enable
-    , disable
     , delete
     , render
     , getPickId
     ) where
 
-import           BigE.Internal.GLResources (deleteFramebuffer, deleteProgram,
-                                            deleteTexture, genFramebuffer,
-                                            genTexture)
+import           BigE.Internal.GLResources (deleteProgram)
 import qualified BigE.Program              as Program
 import           BigE.Runtime.Render       (Render)
-import           BigE.Types                (Framebuffer (..), Location (..),
-                                            Program, ShaderType (..),
-                                            Texture (..), TextureMagFilter (..),
-                                            TextureMinFilter (..),
-                                            TextureWrap (..), ToGLint (..),
-                                            Uniform (..))
+import           BigE.TexturedFramebuffer  (TexturedFramebuffer)
+import qualified BigE.TexturedFramebuffer  as TFB
+import           BigE.Types                (Location (..), Program,
+                                            ShaderType (..), Uniform (..))
 import           Control.Monad             (forM_)
 import           Control.Monad.IO.Class    (MonadIO, liftIO)
 import           Data.Bits                 (shift, (.&.), (.|.))
 import           Data.ByteString.Char8     (ByteString)
-import           Foreign                   (nullPtr, peekArray, withArray)
+import           Foreign                   (peekArray, withArray)
 import           Graphics.GL               (GLfloat, GLsizei, GLubyte, GLuint)
 import qualified Graphics.GL               as GL
 import           Linear                    (M44, (!*!))
@@ -52,9 +46,7 @@ import           Text.Printf               (printf)
 -- the record is opaque to the user. If using the color texture directly beware
 -- that the texture will be replaces when the display is resizing.
 data MousePicker = MousePicker
-    { frameBuffer    :: !Framebuffer
-    , colorTexture   :: !Texture
-    , depthTexture   :: !Texture
+    { framebuffer    :: !TexturedFramebuffer
     , program        :: !Program
     , mvpLocation    :: !Location
     , pickIdLocation :: !Location
@@ -123,14 +115,12 @@ init width height = do
     case eProgram of
 
         Right program' -> do
-            (frameBuffer', colorTexture', depthTexture') <- initResources width height
+            framebuffer' <- TFB.init width height
             mvpLocation' <- Program.getUniformLocation program' "mvp"
             pickIdLocation' <- Program.getUniformLocation program' "pickId"
 
             return $ Right MousePicker
-                { frameBuffer = frameBuffer'
-                , colorTexture = colorTexture'
-                , depthTexture = depthTexture'
+                { framebuffer = framebuffer'
                 , program = program'
                 , mvpLocation = mvpLocation'
                 , pickIdLocation = pickIdLocation'
@@ -143,36 +133,20 @@ init width height = do
 -- | Resize the mouse picker.
 resize :: MonadIO m => Int -> Int -> MousePicker -> m (Either String MousePicker)
 resize width height mousePicker = do
-    deleteTexture $ depthTexture mousePicker
-    deleteTexture $ colorTexture mousePicker
-    deleteFramebuffer $ frameBuffer mousePicker
+    TFB.delete $ framebuffer mousePicker
 
-    (frameBuffer', colorTexture', depthTexture') <- initResources width height
+    framebuffer' <- TFB.init width height
 
     return $ Right mousePicker
-        { frameBuffer = frameBuffer'
-        , colorTexture = colorTexture'
-        , depthTexture = depthTexture'
+        { framebuffer = framebuffer'
         , textureWidth = fromIntegral width
         , textureHeight = fromIntegral height
         }
 
--- | Enable the framebuffer.
-enable :: MonadIO m => MousePicker -> m ()
-enable mousePicker = do
-    let Framebuffer fbo = frameBuffer mousePicker
-    GL.glBindFramebuffer GL.GL_DRAW_FRAMEBUFFER fbo
-
--- | Disable the framebuffer.
-disable :: MonadIO m => m ()
-disable = GL.glBindFramebuffer GL.GL_DRAW_FRAMEBUFFER 0
-
 -- | Delete all mouse picker resources.
 delete :: MonadIO m => MousePicker -> m ()
 delete mousePicker = do
-    deleteTexture $ depthTexture mousePicker
-    deleteTexture $ colorTexture mousePicker
-    deleteFramebuffer $ frameBuffer mousePicker
+    TFB.delete $ framebuffer mousePicker
     deleteProgram $ program mousePicker
 
 -- | Render the 'Pickable' objects, i.e. types implementing the 'PickObject'
@@ -181,7 +155,7 @@ delete mousePicker = do
 -- 1 1 1 0 as clear color, and depth checking is activated.
 render :: M44 GLfloat -> [Pickable] -> MousePicker -> Render app ()
 render vp xs mousePicker = do
-    enable mousePicker
+    TFB.enableDraw $ framebuffer mousePicker
     Program.enable $ program mousePicker
 
     GL.glViewport 0 0 (textureWidth mousePicker) (textureHeight mousePicker)
@@ -197,21 +171,15 @@ render vp xs mousePicker = do
         renderForPicking pickObj
 
     Program.disable
-    disable
+    TFB.disableDraw
 
 -- | Get the 'PickId' for the thing beeing at the (x, y) pixel coordinate.
 -- If an unpickable object is found, Nothing is returned.
 getPickId :: MonadIO m => (Int, Int) -> MousePicker -> m (Maybe PickId)
 getPickId (x, y) mousePicker = do
-    let Framebuffer fbo = frameBuffer mousePicker
-
-    GL.glBindFramebuffer GL.GL_READ_FRAMEBUFFER fbo
-    GL.glReadBuffer GL.GL_COLOR_ATTACHMENT0
-
+    TFB.enableRead $ framebuffer mousePicker
     pid <- liftIO readPixel
-
-    GL.glReadBuffer GL.GL_NONE
-    GL.glBindFramebuffer GL.GL_READ_FRAMEBUFFER 0
+    TFB.disableRead
 
     if pid /= unpickableId
         then return $ Just pid
@@ -232,55 +200,6 @@ initProgram =
         [ (VertexShader, "builtin/MousePicker/vertex.glsl", vertexShader)
         , (FragmentShader, "builtin/MousePicker/fragment.glsl", fragmentShader)
         ]
-
--- | Initialize the Framebuffer and Texture resources needed.
-initResources :: MonadIO m => Int -> Int -> m (Framebuffer, Texture, Texture)
-initResources width height = do
-    -- Create the frame buffer object.
-    frameBuffer'@(Framebuffer fbo) <- genFramebuffer
-    GL.glBindFramebuffer GL.GL_FRAMEBUFFER fbo
-
-    -- Create the color texture and attach it to the frame buffer.
-    colorTexture'@(Texture cTex) <- genTexture
-    GL.glBindTexture GL.GL_TEXTURE_2D cTex
-    GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_RGB8)
-                    (fromIntegral width) (fromIntegral height)
-                    0 GL.GL_RGB GL.GL_UNSIGNED_BYTE nullPtr
-    configureTexture
-    GL.glFramebufferTexture2D GL.GL_FRAMEBUFFER GL.GL_COLOR_ATTACHMENT0
-                              GL.GL_TEXTURE_2D cTex 0
-
-    -- Create the depth texture and attach it to the frame buffer.
-    depthTexture'@(Texture dTex) <- genTexture
-    GL.glBindTexture GL.GL_TEXTURE_2D dTex
-    GL.glTexImage2D GL.GL_TEXTURE_2D 0 (fromIntegral GL.GL_DEPTH_COMPONENT)
-                    (fromIntegral width) (fromIntegral height)
-                    0 GL.GL_DEPTH_COMPONENT GL.GL_FLOAT nullPtr
-    configureTexture
-    GL.glFramebufferTexture2D GL.GL_FRAMEBUFFER GL.GL_DEPTH_ATTACHMENT
-                              GL.GL_TEXTURE_2D dTex 0
-
-    -- Disable buffer reading.
-    GL.glReadBuffer GL.GL_NONE
-
-    -- Set the attached color buffer as draw buffer.
-    GL.glDrawBuffer GL.GL_COLOR_ATTACHMENT0
-
-    bufStat <- GL.glCheckFramebufferStatus GL.GL_FRAMEBUFFER
-    liftIO $ print (bufStat == GL.GL_FRAMEBUFFER_COMPLETE)
-    liftIO $ print bufStat
-
-    -- Restore default frame buffer.
-    GL.glBindTexture GL.GL_TEXTURE_2D 0
-    GL.glBindFramebuffer GL.GL_FRAMEBUFFER 0
-
-    return (frameBuffer', colorTexture', depthTexture')
-    where
-      configureTexture = do
-        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_S (toGLint WrapClampToEdge)
-        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_WRAP_T (toGLint WrapClampToEdge)
-        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MIN_FILTER (toGLint MinNearest)
-        GL.glTexParameteri GL.GL_TEXTURE_2D GL.GL_TEXTURE_MAG_FILTER (toGLint MagNearest)
 
 -- | Vertex shader.
 vertexShader :: ByteString
