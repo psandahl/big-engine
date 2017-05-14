@@ -48,6 +48,7 @@ library
                        BigE.TextRenderer.Text
                        BigE.TextRenderer.Types
                        BigE.TextRenderer.Parser
+                       BigE.ImageMap
                        BigE.Math
                        BigE.Mesh
                        BigE.MousePicker
@@ -63,6 +64,7 @@ library
                        BigE.Runtime.Display
                        BigE.Runtime.Render
   build-depends:       base >= 4.7 && < 5
+                     , binary
                      , bytestring
                      , filepath
                      , GLFW-b
@@ -73,6 +75,7 @@ library
                      , OpenGLRaw
                      , unordered-containers
                      , vector
+                     , vector-binary-instances
   default-language:    Haskell2010
   ghc-options:         -Wall -Werror
 
