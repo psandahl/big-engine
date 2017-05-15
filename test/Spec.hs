@@ -4,6 +4,7 @@ import           Test.Framework                 (Test, defaultMain, testGroup)
 import           Test.Framework.Providers.HUnit (testCase)
 
 import           FontParserTests
+import           ImageMapTests
 import           MathTests
 import           PickIdTests
 import           UtilTests
@@ -36,6 +37,12 @@ testSuite =
         [ testCase "zeroPickId shall be zero" zeroValuedPickId
         , testCase "nextPickId shall increse by one" incresedPickId
         , testCase "literalPickId shall construct correctly" pickIdConstruction
+        ]
+    , testGroup "ImageMap tests"
+        [ testCase "Created with wrong dimensions" withWrongDimensions
+        , testCase "Created with right dimensions" withRightDimensions
+        , testCase "Reporting the expected size" reportingSize
+        , testCase "Finding elements" findingElements
         ]
     , testGroup "Math tests - angle conversions"
         [ testCase "Conversion to radians" toRadiansConversion

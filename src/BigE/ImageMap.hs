@@ -8,9 +8,12 @@
 -- Language: Haskell2010
 module BigE.ImageMap
     ( ImageMap
-    , MapSpec (..)
+    , FileSpec (..)
     , ImageElement (..)
+    , Pixel16
+    , PixelRGB8
     , fromFile
+    , fromVector
     , elementAt
     , imageSize
     ) where
@@ -28,8 +31,8 @@ import qualified Data.Vector                as Vector
 -- | An image map. Usable for e.g. height maps or color maps.
 newtype ImageMap = ImageMap ImageImplementation
 
--- | Specification of the 'ImageMap' to be read.
-data MapSpec
+-- | Specification of the 'ImageMap' to be read from file.
+data FileSpec
     = RGB8File !FilePath
     | Raw16File !(Int, Int) !FilePath
     deriving Show
@@ -38,7 +41,7 @@ data MapSpec
 data ImageElement
     = Raw !Pixel16
     | RGB !PixelRGB8
-    deriving Show
+    deriving (Eq, Show)
 
 -- | The internal representation of an 'ImageMap'.
 data ImageImplementation
@@ -48,8 +51,8 @@ data ImageImplementation
                }
     | RGBImage !(Image PixelRGB8)
 
--- | Read an 'ImageMap' from file.
-fromFile :: MonadIO m => MapSpec -> m (Either String ImageMap)
+-- | Create an 'ImageMap' from file.
+fromFile :: MonadIO m => FileSpec -> m (Either String ImageMap)
 
 -- Raw file flavour.
 fromFile (Raw16File dimensions file) =
@@ -59,17 +62,24 @@ fromFile (Raw16File dimensions file) =
 fromFile (RGB8File file) =
     fmap (ImageMap . RGBImage . convertRGB8) <$> liftIO (readImage file)
 
--- | Get the element at row, col.
+-- | Create 'ImageMap' from a Vector.
+fromVector :: (Int, Int) -> Vector Pixel16 -> Either String ImageMap
+fromVector (w, h) vec
+    | w * h == Vector.length vec =
+        Right $ ImageMap RawImage { width = w, height = h, storage = vec }
+    | otherwise = Left "Specified dimension don't match vector"
+
+-- | Get the element at x, y.
 elementAt :: Int -> Int -> ImageMap -> ImageElement
 
 -- Raw file flavour.
-elementAt row col (ImageMap (RawImage w _h vec)) =
-    let idx = w * row + col
+elementAt x y (ImageMap (RawImage w _h vec)) =
+    let idx = w * y + x
         val = vec ! idx
     in Raw val
 
 -- RGB image. Let JuicyPixels take care of the details.
-elementAt row col (ImageMap (RGBImage img)) = RGB $ pixelAt img row col
+elementAt x y (ImageMap (RGBImage img)) = RGB $ pixelAt img x y
 
 -- | Get the 'ImageMap's size in pixels, (width, height).
 imageSize :: ImageMap -> (Int, Int)
