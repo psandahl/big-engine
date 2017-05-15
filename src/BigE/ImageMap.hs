@@ -19,12 +19,11 @@ import           Codec.Picture              (Image (..), Pixel16, PixelRGB8,
                                              convertRGB8, pixelAt, readImage)
 import           Control.Exception          (SomeException, try)
 import           Control.Monad.IO.Class     (MonadIO, liftIO)
-import           Data.Binary.Get            (runGet)
+import           Data.Binary.Get            (Get, getWord16be, runGet)
 import           Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as ByteString
 import           Data.Vector                (Vector, (!))
 import qualified Data.Vector                as Vector
-import           Data.Vector.Binary         (genericGetVector)
 
 -- | An image map. Usable for e.g. height maps or color maps.
 newtype ImageMap = ImageMap ImageImplementation
@@ -97,5 +96,13 @@ fromRawFile (w, h) file = do
 tryReadFile :: FilePath -> IO (Either SomeException (Vector Pixel16))
 tryReadFile file = try $ toVector <$> ByteString.readFile file
 
+-- | Read a Vector Pixel16 from ByteString. Assume the size of the Vector is
+-- half the length of the ByteString, and yes, the ByteString must be
+-- fully evaluated to perform this.
 toVector :: ByteString -> Vector Pixel16
-toVector = runGet genericGetVector
+toVector bs =
+    let pxl16Items = fromIntegral $ ByteString.length bs `div` 2
+    in runGet (buildVector pxl16Items) bs
+    where
+        buildVector :: Int -> Get (Vector Pixel16)
+        buildVector num = Vector.replicateM num getWord16be
