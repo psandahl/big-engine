@@ -5,6 +5,12 @@
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
+
+-- Image maps are 2D data structures, based on bitmap images, that are used
+-- as input for height or colors when creating terrains.
+--
+-- The 'ImageMap' can be initialized from external files, either RAW16 files
+-- or coded RGB files, or initialized from RAW16 vectors.
 module BigE.ImageMap
     ( ImageMap
     , FileSpec (..)
