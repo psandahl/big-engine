@@ -6,7 +6,6 @@
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
--- Language: Haskell2010
 module BigE.Runtime.Render
     ( Render
     , RenderState (..)

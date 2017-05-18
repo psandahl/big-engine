@@ -5,13 +5,12 @@
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
--- Language: Haskell2010
 module BigE.Util
     ( eitherTwo
     , eitherThree
     ) where
 
-import Data.Either (isRight, isLeft)
+import           Data.Either (isLeft, isRight)
 
 -- | Utility for evaluating a tuple of two 'Either's. The left type must be the
 -- same for both of them. In case of multiple errors only the first is
@@ -38,8 +37,8 @@ eitherThree (e1, e2, e3)
 -- at places where values are guareded with isLeft or isRight.
 fromLeft :: Either a b -> a
 fromLeft (Left err) = err
-fromLeft _ = error "Shall not happen"
+fromLeft _          = error "Shall not happen"
 
 fromRight :: Either a b -> b
 fromRight (Right value) = value
-fromRight _ = error "Shall not happen"
+fromRight _             = error "Shall not happen"
