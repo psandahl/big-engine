@@ -4,9 +4,10 @@ import           Test.Framework                 (Test, defaultMain, testGroup)
 import           Test.Framework.Providers.HUnit (testCase)
 
 import           FontParserTests
-import           ImageMapTests
+import qualified ImageMapTests
 import           MathTests
 import           PickIdTests
+import qualified TerrainGridTests
 import           UtilTests
 import           VertexTests
 
@@ -39,10 +40,15 @@ testSuite =
         , testCase "literalPickId shall construct correctly" pickIdConstruction
         ]
     , testGroup "ImageMap tests"
-        [ testCase "Created with wrong dimensions" withWrongDimensions
-        , testCase "Created with right dimensions" withRightDimensions
-        , testCase "Reporting the expected size" reportingSize
-        , testCase "Finding elements" findingElements
+        [ testCase "Created with wrong dimensions" ImageMapTests.withWrongDimensions
+        , testCase "Created with right dimensions" ImageMapTests.withRightDimensions
+        , testCase "Reporting the expected size" ImageMapTests.reportingSize
+        , testCase "Finding elements" ImageMapTests.findingElements
+        ]
+    , testGroup "TerrainGrid tests - construction"
+        [ testCase "Create with too small ImageMap" TerrainGridTests.withTooSmallImageMap
+        , testCase "Created with minimum ImageMap" TerrainGridTests.withMinimumImageMap
+        , testCase "Reporting the expected sizes" TerrainGridTests.reportingSize
         ]
     , testGroup "Math tests - angle conversions"
         [ testCase "Conversion to radians" toRadiansConversion

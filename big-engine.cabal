@@ -21,6 +21,7 @@ test-suite big-engine-test
                        MathTests
                        PickIdTests
                        FontParserTests
+                       TerrainGridTests
                        UtilTests
                        VertexTests
   build-depends:       base >= 4.7 && < 5
@@ -56,6 +57,7 @@ library
                        BigE.MousePicker
                        BigE.Runtime
                        BigE.Program
+                       BigE.TerrainGrid
                        BigE.Texture
                        BigE.TexturedFramebuffer
                        BigE.Types

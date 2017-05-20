@@ -16,15 +16,16 @@ module BigE.ImageMap
     , FileSpec (..)
     , ImageElement (..)
     , Pixel16
-    , PixelRGB8
+    , PixelRGB8 (..)
     , fromFile
     , fromVector
     , elementAt
     , imageSize
     ) where
 
-import           Codec.Picture              (Image (..), Pixel16, PixelRGB8,
-                                             convertRGB8, pixelAt, readImage)
+import           Codec.Picture              (Image (..), Pixel16,
+                                             PixelRGB8 (..), convertRGB8,
+                                             pixelAt, readImage)
 import           Control.Exception          (SomeException, try)
 import           Control.Monad.IO.Class     (MonadIO, liftIO)
 import           Data.Binary.Get            (Get, getWord16be, runGet)
@@ -36,7 +37,8 @@ import qualified Data.Vector                as Vector
 -- | An image map. Usable for e.g. height maps or color maps.
 newtype ImageMap = ImageMap ImageImplementation
 
--- | Specification of the 'ImageMap' to be read from file.
+-- | Specification of the 'ImageMap' to be read from file. Dimensions are
+-- (width, size).
 data FileSpec
     = RGB8File !FilePath
     | Raw16File !(Int, Int) !FilePath
@@ -67,7 +69,7 @@ fromFile (Raw16File dimensions file) =
 fromFile (RGB8File file) =
     fmap (ImageMap . RGBImage . convertRGB8) <$> liftIO (readImage file)
 
--- | Create 'ImageMap' from a Vector.
+-- | Create 'ImageMap' from a Vector. Dimensions are (width, size).
 fromVector :: (Int, Int) -> Vector Pixel16 -> Either String ImageMap
 fromVector (w, h) vec
     | w * h == Vector.length vec =
