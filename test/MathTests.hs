@@ -1,12 +1,16 @@
 module MathTests
     ( toRadiansConversion
     , toDegreesConversion
+    , heightInFlatTriangle
+    , heightInZSkewedTriangle
+    , heightInXSkewedTriangle
     ) where
 
 import           Test.HUnit
 import           Test.HUnit.Approx
 
-import           BigE.Math         (toDegrees, toRadians)
+import           BigE.Math         (baryCentricHeight, toDegrees, toRadians)
+import           Linear            (V3 (..))
 
 toRadiansConversion :: Assertion
 toRadiansConversion = do
@@ -22,8 +26,48 @@ toDegreesConversion = do
     180 `equalTo` toDegrees pi
     360 `equalTo` toDegrees (pi * 2)
 
+-- | Height calculation in a perfectly flat triangle with the height of zero
+-- over the whole area.
+heightInFlatTriangle :: Assertion
+heightInFlatTriangle = do
+    let p1 = V3 0 0 0
+        p2 = V3 1 0 0
+        p3 = V3 0 0 1
+    0 `equalTo` baryCentricHeight p1 p2 p3 0 0
+    0 `equalTo` baryCentricHeight p1 p2 p3 1 0
+    0 `equalTo` baryCentricHeight p1 p2 p3 0 1
+    0 `equalTo` baryCentricHeight p1 p2 p3 0.5 0.25
+
+-- | Height calculation in a triangle skewed on the Z-axis. Lowest -0.5 and
+-- highest 0.5.
+heightInZSkewedTriangle :: Assertion
+heightInZSkewedTriangle = do
+    let p1 = V3 0 (-0.5) 0
+        p2 = V3 1 0.5 0
+        p3 = V3 0 (-0.5) 1
+    (-0.5) `equalTo` baryCentricHeight p1 p2 p3 0 0
+    0.5 `equalTo` baryCentricHeight p1 p2 p3 1 0
+    (-0.5) `equalTo` baryCentricHeight p1 p2 p3 0 1
+    (-0.25) `equalTo` baryCentricHeight p1 p2 p3 0.25 0.25
+    0 `equalTo` baryCentricHeight p1 p2 p3 0.5 0.25
+    0.25 `equalTo` baryCentricHeight p1 p2 p3 0.75 0.25
+
+-- | Height calculation in a triangle skewed on the X-axis. Lowest -0.5 and
+-- highest 0.5.
+heightInXSkewedTriangle :: Assertion
+heightInXSkewedTriangle = do
+    let p1 = V3 0 (-0.5) 0
+        p2 = V3 1 (-0.5) 0
+        p3 = V3 0 0.5 1
+    (-0.5) `equalTo` baryCentricHeight p1 p2 p3 0 0
+    (-0.5) `equalTo` baryCentricHeight p1 p2 p3 1 0
+    0.5 `equalTo` baryCentricHeight p1 p2 p3 0 1
+    (-0.25) `equalTo` baryCentricHeight p1 p2 p3 0.25 0.25
+    0 `equalTo` baryCentricHeight p1 p2 p3 0.25 0.5
+    0.25 `equalTo` baryCentricHeight p1 p2 p3 0.25 0.75
+
 equalTo :: Float -> Float -> Assertion
-equalTo expected = assertApproxEqual "Shall be equal" closeEnough expected
+equalTo = assertApproxEqual "Shall be equal" closeEnough
 
 closeEnough :: Float
 closeEnough = 0.00001

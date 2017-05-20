@@ -54,6 +54,11 @@ testSuite =
         [ testCase "Conversion to radians" toRadiansConversion
         , testCase "Conversion to degrees" toDegreesConversion
         ]
+    , testGroup "Math tests - bary centric coordinates"
+        [ testCase "Always height 0 in flat triangle" heightInFlatTriangle
+        , testCase "Height in triangle skewed on Z-axis" heightInZSkewedTriangle
+        , testCase "Height in triangle skewed in X-axis" heightInXSkewedTriangle
+        ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo
         , testCase "eitherThree" eitherThree
