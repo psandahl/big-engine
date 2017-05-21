@@ -15,11 +15,13 @@ module BigE.TerrainGrid
     , fromImageMap
     , verticeGridSize
     , squareGridSize
+    , terrainHeight
     ) where
 
 import           BigE.ImageMap (ImageElement (..), ImageMap, PixelRGB8 (..),
                                 elementAt, imageSize)
-import           Data.Vector   (Vector)
+import           BigE.Math     (baryCentricHeight)
+import           Data.Vector   (Vector, (!))
 import qualified Data.Vector   as Vector
 import           Graphics.GL   (GLfloat)
 import           Linear        (V3 (..))
@@ -59,6 +61,43 @@ squareGridSize terrainGrid =
     let (w, h) = verticeGridSize terrainGrid
     in (w - 1, h - 1)
 
+-- | Calculate the height - y - under the 2D position given by x and z. The
+-- grid's origin is always at x = 0, z = 0. If the given position is outside
+-- of the grid the height of zero is returned.
+terrainHeight :: (Float, Float) -> TerrainGrid -> GLfloat
+terrainHeight (x, z) terrainGrid@(TerrainGrid gridVector) =
+    let (baseX, fracX) = splitFloat x
+        (baseZ, fracZ) = splitFloat z
+        (width, height) = verticeGridSize terrainGrid
+    in if baseX < width && baseZ < height
+           then
+               let (p1, p2, p3) = triSelect baseX baseZ $ fracX + fracZ
+               in baryCentricHeight p1 p2 p3 x z
+           else 0
+    where
+        -- Selection of the triangle the point is inside. If the selection
+        -- value is greater than 1 then the point is inside the right triangle.
+        -- x' and z' both represent the top left vertice of the square
+        -- containing the point.
+        triSelect :: Int -> Int -> Float -> (V3 GLfloat, V3 GLfloat, V3 GLfloat)
+        triSelect x' z' selection
+            | selection > 1.0 =
+                let p1 = gridLookup (x' + 1) z'
+                    p2 = gridLookup x' z'
+                    p3 = gridLookup (x' + 1) (z' + 1)
+                in (p1, p2, p3)
+            | otherwise =
+                let p1 = gridLookup x' z'
+                    p2 = gridLookup (x' + 1) z'
+                    p3 = gridLookup x' (z' + 1)
+                in (p1, p2, p3)
+
+        -- Get the value at x, z in the grid.
+        gridLookup :: Int -> Int -> V3 GLfloat
+        gridLookup x' z' =
+            let row = gridVector ! z'
+            in row ! x'
+
 -- | Make a single row.
 mkRow :: Float -> ImageMap -> Int -> Int -> Row
 mkRow heightScale imageMap width row =
@@ -72,3 +111,9 @@ mkRow heightScale imageMap width row =
         convertPixel :: ImageElement -> GLfloat
         convertPixel (Raw val)               = fromIntegral val
         convertPixel (RGB (PixelRGB8 r _ _)) = fromIntegral r -- Assume grey
+
+splitFloat :: Float -> (Int, Float)
+splitFloat value =
+    let base = floor value
+        frac = value - fromIntegral base
+    in (base, frac)

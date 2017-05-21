@@ -50,6 +50,9 @@ testSuite =
         , testCase "Created with minimum ImageMap" TerrainGridTests.withMinimumImageMap
         , testCase "Reporting the expected sizes" TerrainGridTests.reportingSize
         ]
+    , testGroup "TerrainGrid tests - height calculation"
+        [ testCase "Zero height outside of grid" TerrainGridTests.indexingOutsideGrid
+        ]
     , testGroup "Math tests - angle conversions"
         [ testCase "Conversion to radians" toRadiansConversion
         , testCase "Conversion to degrees" toDegreesConversion
