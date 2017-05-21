@@ -105,10 +105,10 @@ terrainHeight (x, z) terrainGrid =
 mkRow :: Float -> ImageMap -> Int -> Int -> Row
 mkRow heightScale imageMap width row =
     Vector.generate width $ \col ->
-        let pixel = elementAt row col imageMap
+        let pixel = elementAt col row imageMap
             x = fromIntegral col
-            y = fromIntegral row
-            z = convertPixel pixel / heightScale
+            y = convertPixel pixel / heightScale
+            z = fromIntegral row
         in V3 x y z
     where
         convertPixel :: ImageElement -> GLfloat

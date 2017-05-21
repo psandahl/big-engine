@@ -49,6 +49,7 @@ testSuite =
         [ testCase "Create with too small ImageMap" TerrainGridTests.withTooSmallImageMap
         , testCase "Created with minimum ImageMap" TerrainGridTests.withMinimumImageMap
         , testCase "Reporting the expected sizes" TerrainGridTests.reportingSize
+        , testCase "Checking terrain content" TerrainGridTests.checkingContent
         ]
     , testGroup "TerrainGrid tests - height calculation"
         [ testCase "Zero height outside of grid" TerrainGridTests.indexingOutsideGrid
