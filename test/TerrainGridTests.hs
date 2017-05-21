@@ -38,6 +38,7 @@ indexingOutsideGrid :: Assertion
 indexingOutsideGrid = do
     let Right imageMap = fromVector (2, 2) $ Vector.fromList [1, 1, 1, 1]
         Right terrainGrid = fromImageMap 1 imageMap
+    print terrainGrid
     0 `equalTo` terrainHeight (0.5, 0.5) terrainGrid
 
 equalTo :: Float -> Float -> Assertion

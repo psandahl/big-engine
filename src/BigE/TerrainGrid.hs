@@ -15,6 +15,7 @@ module BigE.TerrainGrid
     , fromImageMap
     , verticeGridSize
     , squareGridSize
+    , lookup
     , terrainHeight
     ) where
 
@@ -25,6 +26,7 @@ import           Data.Vector   (Vector, (!))
 import qualified Data.Vector   as Vector
 import           Graphics.GL   (GLfloat)
 import           Linear        (V3 (..))
+import           Prelude       hiding (lookup)
 
 -- | The terrain grid. Upper left corner of the grid is always at 0, 0. To
 -- move the grid elsewhere require translation.
@@ -61,11 +63,18 @@ squareGridSize terrainGrid =
     let (w, h) = verticeGridSize terrainGrid
     in (w - 1, h - 1)
 
+-- Get the value at point x, z in the grid. Lookup is based on 'Vectors'
+-- unsafe lookup, so beware ...
+lookup :: (Int, Int) -> TerrainGrid -> V3 GLfloat
+lookup (x, z) (TerrainGrid gridVector)=
+    let row = gridVector ! z
+    in row ! x
+
 -- | Calculate the height - y - under the 2D position given by x and z. The
 -- grid's origin is always at x = 0, z = 0. If the given position is outside
 -- of the grid the height of zero is returned.
 terrainHeight :: (Float, Float) -> TerrainGrid -> GLfloat
-terrainHeight (x, z) terrainGrid@(TerrainGrid gridVector) =
+terrainHeight (x, z) terrainGrid =
     let (baseX, fracX) = splitFloat x
         (baseZ, fracZ) = splitFloat z
         (width, height) = verticeGridSize terrainGrid
@@ -82,21 +91,15 @@ terrainHeight (x, z) terrainGrid@(TerrainGrid gridVector) =
         triSelect :: Int -> Int -> Float -> (V3 GLfloat, V3 GLfloat, V3 GLfloat)
         triSelect x' z' selection
             | selection > 1.0 =
-                let p1 = gridLookup (x' + 1) z'
-                    p2 = gridLookup x' z'
-                    p3 = gridLookup (x' + 1) (z' + 1)
+                let p1 = lookup (x' + 1, z') terrainGrid
+                    p2 = lookup (x', z') terrainGrid
+                    p3 = lookup (x' + 1, z' + 1) terrainGrid
                 in (p1, p2, p3)
             | otherwise =
-                let p1 = gridLookup x' z'
-                    p2 = gridLookup (x' + 1) z'
-                    p3 = gridLookup x' (z' + 1)
+                let p1 = lookup (x', z') terrainGrid
+                    p2 = lookup (x' + 1, z') terrainGrid
+                    p3 = lookup (x', z' + 1) terrainGrid
                 in (p1, p2, p3)
-
-        -- Get the value at x, z in the grid.
-        gridLookup :: Int -> Int -> V3 GLfloat
-        gridLookup x' z' =
-            let row = gridVector ! z'
-            in row ! x'
 
 -- | Make a single row.
 mkRow :: Float -> ImageMap -> Int -> Int -> Row
