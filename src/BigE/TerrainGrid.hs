@@ -77,7 +77,7 @@ terrainHeight :: (Float, Float) -> TerrainGrid -> GLfloat
 terrainHeight (x, z) terrainGrid =
     let (baseX, fracX) = splitFloat x
         (baseZ, fracZ) = splitFloat z
-        (width, height) = verticeGridSize terrainGrid
+        (width, height) = squareGridSize terrainGrid
     in if baseX < width && baseZ < height
            then
                let (p1, p2, p3) = triSelect baseX baseZ $ fracX + fracZ
