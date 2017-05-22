@@ -4,6 +4,7 @@ module TerrainGridTests
     , reportingSize
     , checkingContent
     , indexingOutsideGrid
+    , selectingCorrectTriangle
     ) where
 
 import           Test.HUnit
@@ -69,6 +70,18 @@ indexingOutsideGrid = do
     0 `equalTo` terrainHeight (1.0, 0.0) terrainGrid
     0 `equalTo` terrainHeight (0.0, 1.0) terrainGrid
     0 `equalTo` terrainHeight (1.0, 1.0) terrainGrid
+
+-- | Depending on the point's position within a square the left or right
+-- triangle is selected.
+selectingCorrectTriangle :: Assertion
+selectingCorrectTriangle = do
+    let Right imageMap = fromVector (2, 2) $ Vector.fromList [0, 1, 0, 1]
+        Right terrainGrid = fromImageMap 1 imageMap
+    -- To the left edge. Shall be 0.
+    0 `equalTo` terrainHeight (0.0, 0.5) terrainGrid
+
+    -- To the right edge. Shall be close to 0.99.
+    0.99 `equalTo` terrainHeight (0.99, 0.5) terrainGrid
 
 equalTo :: Float -> Float -> Assertion
 equalTo = assertApproxEqual "Shall be equal" closeEnough

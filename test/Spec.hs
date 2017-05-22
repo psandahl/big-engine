@@ -53,6 +53,7 @@ testSuite =
         ]
     , testGroup "TerrainGrid tests - height calculation"
         [ testCase "Zero height outside of grid" TerrainGridTests.indexingOutsideGrid
+        , testCase "Selecting correct triangle" TerrainGridTests.selectingCorrectTriangle
         ]
     , testGroup "Math tests - angle conversions"
         [ testCase "Conversion to radians" toRadiansConversion
