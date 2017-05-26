@@ -5,17 +5,22 @@ module TerrainGridTests
     , checkingContent
     , indexingOutsideGrid
     , selectingCorrectTriangle
+    , indicesFor1x1Quad
+    , indicesFor2x1Quad
+    , indicesFor2x2Quad
     ) where
 
 import           Test.HUnit
 import           Test.HUnit.Approx
 
-import           BigE.ImageMap     (fromVector)
-import           BigE.TerrainGrid  (fromImageMap, lookup, squareGridSize,
-                                    terrainHeight, verticeGridSize)
-import qualified Data.Vector       as Vector
-import           Linear            (V3 (..))
-import           Prelude           hiding (lookup)
+import           BigE.ImageMap        (fromVector)
+import           BigE.TerrainGrid     (fromImageMap, indexVector, lookup,
+                                       quadGridSize, terrainHeight,
+                                       verticeGridSize)
+import qualified Data.Vector          as Vector
+import qualified Data.Vector.Storable as SVector
+import           Linear               (V3 (..))
+import           Prelude              hiding (lookup)
 
 -- | An input ImageMap must be at least 2, 2 big. In this test case
 -- the input is too small and the creation shall fail
@@ -35,13 +40,13 @@ withMinimumImageMap = do
         Left _  -> assertBool "Shall succeed" False
 
 -- | Check that a TerrainGrid is reporting the expected sizes. One size for
--- the vertice grid and a smaller size for the square grid.
+-- the vertice grid and a smaller size for the quad grid.
 reportingSize :: Assertion
 reportingSize = do
     let Right imageMap = fromVector (3, 2) $ Vector.fromList [1, 2, 3, 4, 5, 6]
         Right terrainGrid = fromImageMap 1 imageMap
     (3, 2) @=? verticeGridSize terrainGrid
-    (2, 1) @=? squareGridSize terrainGrid
+    (2, 1) @=? quadGridSize terrainGrid
 
 -- | Verify that the created TerrainGrid has the expected content.
 checkingContent :: Assertion
@@ -82,6 +87,36 @@ selectingCorrectTriangle = do
 
     -- To the right edge. Shall be close to 0.99.
     0.99 `equalTo` terrainHeight (0.99, 0.5) terrainGrid
+
+-- | Generate indices for a 1x1 quad grid.
+indicesFor1x1Quad :: Assertion
+indicesFor1x1Quad = do
+    let Right imageMap = fromVector (2, 2) $ Vector.fromList [0, 0, 0, 0]
+        Right terrainGrid = fromImageMap 1 imageMap
+
+    SVector.fromList [1, 0, 2, 1, 2, 3] @=? indexVector terrainGrid
+
+-- | Generate indices for a 2x1 quad grid.
+indicesFor2x1Quad :: Assertion
+indicesFor2x1Quad = do
+    let Right imageMap = fromVector (3, 2) $ Vector.fromList [0, 0, 0, 0, 0, 0]
+        Right terrainGrid = fromImageMap 1 imageMap
+
+    SVector.fromList [ 1, 0, 3, 1, 3, 4
+                     , 2, 1, 4, 2, 4, 5 ] @=? indexVector terrainGrid
+
+-- | Generate indices for a 2x2 quad grid.
+indicesFor2x2Quad :: Assertion
+indicesFor2x2Quad = do
+    let Right imageMap = fromVector (3, 3) $ Vector.fromList [ 0, 0, 0, 0, 0, 0
+                                                             , 0, 0, 0
+                                                             ]
+        Right terrainGrid = fromImageMap 1 imageMap
+
+    SVector.fromList [ 1, 0, 3, 1, 3, 4
+                     , 2, 1, 4, 2, 4, 5
+                     , 4, 3, 6, 4, 6, 7
+                     , 5, 4, 7, 5, 7, 8 ] @=? indexVector terrainGrid
 
 equalTo :: Float -> Float -> Assertion
 equalTo = assertApproxEqual "Shall be equal" closeEnough

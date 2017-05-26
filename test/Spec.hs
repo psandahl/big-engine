@@ -55,6 +55,11 @@ testSuite =
         [ testCase "Zero height outside of grid" TerrainGridTests.indexingOutsideGrid
         , testCase "Selecting correct triangle" TerrainGridTests.selectingCorrectTriangle
         ]
+    , testGroup "TerrainGrid tests - vector exports"
+        [ testCase "Index vector for 1x1 grid" TerrainGridTests.indicesFor1x1Quad
+        , testCase "Index vector for 2x1 grid" TerrainGridTests.indicesFor2x1Quad
+        , testCase "Index vector for 2x2 grid" TerrainGridTests.indicesFor2x2Quad
+        ]
     , testGroup "Math tests - angle conversions"
         [ testCase "Conversion to radians" toRadiansConversion
         , testCase "Conversion to degrees" toDegreesConversion

@@ -37,7 +37,7 @@ data Mesh = Mesh
 
 -- | Build a 'Mesh' from vectors with vertex attribute data and index data.
 fromVector :: (Attribute a, MonadIO m)
-                => BufferUsage -> Vector a -> Vector GLuint -> m Mesh
+           => BufferUsage -> Vector a -> Vector GLuint -> m Mesh
 fromVector bufferUsage vertices indices' = do
     (vao', vbo') <- initAttributes bufferUsage vertices
     return Mesh { vao = vao', vbo = vbo', indices = indices' }

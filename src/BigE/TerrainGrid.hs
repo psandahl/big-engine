@@ -12,28 +12,35 @@
 -- terrain collision.
 module BigE.TerrainGrid
     ( TerrainGrid
+    , StorableVector
     , fromImageMap
     , verticeGridSize
-    , squareGridSize
+    , quadGridSize
     , lookup
     , terrainHeight
+    , indexVector
     ) where
 
-import           BigE.ImageMap (ImageElement (..), ImageMap, PixelRGB8 (..),
-                                elementAt, imageSize)
-import           BigE.Math     (baryCentricHeight)
-import           Data.Vector   (Vector, (!))
-import qualified Data.Vector   as Vector
-import           Graphics.GL   (GLfloat)
-import           Linear        (V3 (..))
-import           Prelude       hiding (lookup)
+import           BigE.ImageMap        (ImageElement (..), ImageMap,
+                                       PixelRGB8 (..), elementAt, imageSize)
+import           BigE.Math            (baryCentricHeight)
+import           Data.Vector          (Vector, (!))
+import qualified Data.Vector          as Vector
+import qualified Data.Vector.Storable as SVector
+import           Graphics.GL          (GLfloat, GLuint)
+import           Linear               (V3 (..))
+import           Prelude              hiding (lookup)
 
 -- | The terrain grid. Upper left corner of the grid is always at 0, 0. To
 -- move the grid elsewhere require translation.
 newtype TerrainGrid = TerrainGrid (Vector Row)
     deriving Show
 
+-- | Internal type for rows in the 'TerrainGrid' matrix.
 type Row = Vector (V3 GLfloat)
+
+-- | Type alias for a storable vector.
+type StorableVector = SVector.Vector
 
 -- | Create a 'TerrainGrid' from the height scaling factor and the 'ImageMap'.
 -- All heights in the 'ImageMap' are divided by the scaling factor.
@@ -56,10 +63,10 @@ verticeGridSize (TerrainGrid gridVector)
     | Vector.null gridVector = (0, 0) -- Should not happen
     | otherwise = (Vector.length $ Vector.head gridVector, Vector.length gridVector)
 
--- | Get the size of the square grid. I.e. the grid of squares. It is the
--- the vertice grid -1.
-squareGridSize :: TerrainGrid -> (Int, Int)
-squareGridSize terrainGrid =
+-- | Get the size of the quad grid. I.e. the grid of quads. It is the
+-- the vertice grid -1 on each component.
+quadGridSize :: TerrainGrid -> (Int, Int)
+quadGridSize terrainGrid =
     let (w, h) = verticeGridSize terrainGrid
     in (w - 1, h - 1)
 
@@ -77,7 +84,7 @@ terrainHeight :: (Float, Float) -> TerrainGrid -> GLfloat
 terrainHeight (x, z) terrainGrid =
     let (baseX, fracX) = splitFloat x
         (baseZ, fracZ) = splitFloat z
-        (width, height) = squareGridSize terrainGrid
+        (width, height) = quadGridSize terrainGrid
     in if baseX < width && baseZ < height
            then
                let (p1, p2, p3) = triSelect baseX baseZ $ fracX + fracZ
@@ -101,6 +108,19 @@ terrainHeight (x, z) terrainGrid =
                     p3 = lookup (x', z' + 1) terrainGrid
                 in (p1, p2, p3)
 
+-- | Generate a 'StorableVector' of indices. Usable for creating meshes.
+indexVector :: TerrainGrid -> StorableVector GLuint
+indexVector terrainGrid =
+    let (quadWidth, quadHeight) = quadGridSize terrainGrid
+        numIndices = quadWidth * quadHeight * 6
+        vertexWidth = quadWidth + 1
+    in SVector.generate numIndices $ \index ->
+        let quadIndex = index `div` 6
+            rowOffset = index `div` (quadWidth * 6)
+            baseIndex = quadIndex + rowOffset
+            vertexIndex = index `mod` 6
+        in gridIndex baseIndex vertexWidth vertexIndex
+
 -- | Make a single row.
 mkRow :: Float -> ImageMap -> Int -> Int -> Row
 mkRow heightScale imageMap width row =
@@ -115,8 +135,22 @@ mkRow heightScale imageMap width row =
         convertPixel (Raw val)               = fromIntegral val
         convertPixel (RGB (PixelRGB8 r _ _)) = fromIntegral r -- Assume grey
 
+-- | Split a Float into a tuple with the base, Int, part and the fractional part.
 splitFloat :: Float -> (Int, Float)
 splitFloat value =
     let base = floor value
         frac = value - fromIntegral base
     in (base, frac)
+
+-- | Each quad in the grid is made up of two triangles, and six indices are
+-- needed to draw a quad. Given a base index for the quad, a vertex width and
+-- the particular vertex index wanted a value can be produced.
+gridIndex :: Int -> Int -> Int -> GLuint
+gridIndex baseIndex vertexWidth vertexIndex
+    | vertexIndex == 0 = fromIntegral $ baseIndex + 1
+    | vertexIndex == 1 = fromIntegral baseIndex
+    | vertexIndex == 2 = fromIntegral $ baseIndex + vertexWidth
+    | vertexIndex == 3 = fromIntegral $ baseIndex + 1
+    | vertexIndex == 4 = fromIntegral $ baseIndex + vertexWidth
+    | vertexIndex == 5 = fromIntegral $ baseIndex + vertexWidth + 1
+    | otherwise = error "Index can only range: [0 - 5]"
