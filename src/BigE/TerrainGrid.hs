@@ -70,7 +70,7 @@ quadGridSize terrainGrid =
     let (w, h) = verticeGridSize terrainGrid
     in (w - 1, h - 1)
 
--- Get the value at point x, z in the grid. Lookup is based on 'Vectors'
+-- Get the value at vertice x, z in the grid. Lookup is based on 'Vectors'
 -- unsafe lookup, so beware ...
 lookup :: (Int, Int) -> TerrainGrid -> V3 GLfloat
 lookup (x, z) (TerrainGrid gridVector)=

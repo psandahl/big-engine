@@ -48,15 +48,28 @@ reportingSize = do
     (3, 2) @=? verticeGridSize terrainGrid
     (2, 1) @=? quadGridSize terrainGrid
 
--- | Verify that the created TerrainGrid has the expected content.
+-- | Verify that the created TerrainGrid has the expected content when looking
+-- at the vertices.
 checkingContent :: Assertion
 checkingContent = do
-    let Right imageMap = fromVector (2, 2) $ Vector.fromList [1, 2, 3, 4]
+    let Right imageMap = fromVector (3, 3) $
+            Vector.fromList [1, 2, 3, 4, 5, 6, 7, 8, 9]
         Right terrainGrid = fromImageMap 1 imageMap
+
+    -- First row
     V3 0 1 0 @=? lookup (0, 0) terrainGrid
     V3 1 2 0 @=? lookup (1, 0) terrainGrid
-    V3 0 3 1 @=? lookup (0, 1) terrainGrid
-    V3 1 4 1 @=? lookup (1, 1) terrainGrid
+    V3 2 3 0 @=? lookup (2, 0) terrainGrid
+
+    -- Second row
+    V3 0 4 1 @=? lookup (0, 1) terrainGrid
+    V3 1 5 1 @=? lookup (1, 1) terrainGrid
+    V3 2 6 1 @=? lookup (2, 1) terrainGrid
+
+    -- Third row
+    V3 0 7 2 @=? lookup (0, 2) terrainGrid
+    V3 1 8 2 @=? lookup (1, 2) terrainGrid
+    V3 2 9 2 @=? lookup (2, 2) terrainGrid
 
 -- | Inside the single square in the grid, the height is 1. Outside the grid
 -- the size shall be 0.
