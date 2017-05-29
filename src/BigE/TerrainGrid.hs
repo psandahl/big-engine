@@ -33,11 +33,16 @@ import           Prelude              hiding (lookup)
 
 -- | The terrain grid. Upper left corner of the grid is always at 0, 0. To
 -- move the grid elsewhere require translation.
-newtype TerrainGrid = TerrainGrid (Vector Row)
-    deriving Show
+data TerrainGrid = TerrainGrid
+    { gridVector :: !(Vector (V3 GLfloat))
+      -- ^ The storage of vertice 3D vectors.
 
--- | Internal type for rows in the 'TerrainGrid' matrix.
-type Row = Vector (V3 GLfloat)
+    , gridWidth  :: !Int
+      -- ^ The width of the grid, in vertices.
+
+    , gridHeight :: !Int
+      -- ^ The height of the grid, in vertices.
+    } deriving Show
 
 -- | Type alias for a storable vector.
 type StorableVector = SVector.Vector
@@ -48,20 +53,30 @@ fromImageMap :: Float -> ImageMap -> Either String TerrainGrid
 fromImageMap heightScale imageMap
     | bigEnough (imageSize imageMap) =
         let (width, height) = imageSize imageMap
-            gridVector = Vector.generate height $ mkRow heightScale imageMap width
-        in Right (TerrainGrid gridVector)
+            gridLength = width * height
+        in Right TerrainGrid
+            { gridVector = Vector.generate gridLength $ \index ->
+                let x = index `mod` width
+                    z = index `div` width
+                    y = convertPixel $ elementAt x z imageMap
+                in V3 (fromIntegral x) (y / heightScale) (fromIntegral z)
+            , gridWidth = width
+            , gridHeight = height
+            }
 
     | otherwise = Left "ImageMap must be at least (2, 2) in size"
     where
         bigEnough :: (Int, Int) -> Bool
         bigEnough (w, h) = w >= 2 && h >= 2
 
+        convertPixel :: ImageElement -> GLfloat
+        convertPixel (Raw val)               = fromIntegral val
+        convertPixel (RGB (PixelRGB8 r _ _)) = fromIntegral r -- Assume grey
+
 -- | Get the size of the vertice grid. I.e. the grid of individual points
 -- in (width, height).
 verticeGridSize :: TerrainGrid -> (Int, Int)
-verticeGridSize (TerrainGrid gridVector)
-    | Vector.null gridVector = (0, 0) -- Should not happen
-    | otherwise = (Vector.length $ Vector.head gridVector, Vector.length gridVector)
+verticeGridSize terrainGrid = (gridWidth terrainGrid, gridHeight terrainGrid)
 
 -- | Get the size of the quad grid. I.e. the grid of quads. It is the
 -- the vertice grid -1 on each component.
@@ -73,9 +88,9 @@ quadGridSize terrainGrid =
 -- Get the value at vertice x, z in the grid. Lookup is based on 'Vectors'
 -- unsafe lookup, so beware ...
 lookup :: (Int, Int) -> TerrainGrid -> V3 GLfloat
-lookup (x, z) (TerrainGrid gridVector)=
-    let row = gridVector ! z
-    in row ! x
+lookup (x, z) terrainGrid =
+    let index = z * gridWidth terrainGrid + x
+    in gridVector terrainGrid ! index
 
 -- | Calculate the height - y - under the 2D position given by x and z. The
 -- grid's origin is always at x = 0, z = 0. If the given position is outside
@@ -120,20 +135,6 @@ indexVector terrainGrid =
             baseIndex = quadIndex + rowOffset
             vertexIndex = index `mod` 6
         in gridIndex baseIndex vertexWidth vertexIndex
-
--- | Make a single row.
-mkRow :: Float -> ImageMap -> Int -> Int -> Row
-mkRow heightScale imageMap width row =
-    Vector.generate width $ \col ->
-        let pixel = elementAt col row imageMap
-            x = fromIntegral col
-            y = convertPixel pixel / heightScale
-            z = fromIntegral row
-        in V3 x y z
-    where
-        convertPixel :: ImageElement -> GLfloat
-        convertPixel (Raw val)               = fromIntegral val
-        convertPixel (RGB (PixelRGB8 r _ _)) = fromIntegral r -- Assume grey
 
 -- | Split a Float into a tuple with the base, Int, part and the fractional part.
 splitFloat :: Float -> (Int, Float)
