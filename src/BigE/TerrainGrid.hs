@@ -18,18 +18,20 @@ module BigE.TerrainGrid
     , quadGridSize
     , lookup
     , terrainHeight
+    , asVertP
     , indexVector
     ) where
 
-import           BigE.ImageMap        (ImageElement (..), ImageMap,
-                                       PixelRGB8 (..), elementAt, imageSize)
-import           BigE.Math            (baryCentricHeight)
-import           Data.Vector          (Vector, (!))
-import qualified Data.Vector          as Vector
-import qualified Data.Vector.Storable as SVector
-import           Graphics.GL          (GLfloat, GLuint)
-import           Linear               (V3 (..))
-import           Prelude              hiding (lookup)
+import qualified BigE.Attribute.Vert_P as Vert_P
+import           BigE.ImageMap         (ImageElement (..), ImageMap,
+                                        PixelRGB8 (..), elementAt, imageSize)
+import           BigE.Math             (baryCentricHeight)
+import           Data.Vector           (Vector, (!))
+import qualified Data.Vector           as Vector
+import qualified Data.Vector.Storable  as SVector
+import           Graphics.GL           (GLfloat, GLuint)
+import           Linear                (V3 (..))
+import           Prelude               hiding (lookup)
 
 -- | The terrain grid. Upper left corner of the grid is always at 0, 0. To
 -- move the grid elsewhere require translation.
@@ -122,6 +124,16 @@ terrainHeight (x, z) terrainGrid =
                     p2 = lookup (x' + 1, z') terrainGrid
                     p3 = lookup (x', z' + 1) terrainGrid
                 in (p1, p2, p3)
+
+-- | Export the 'TerrainGrid' as a vector of 'Vert_P.Vertex' and a
+-- corresponding index vector.
+asVertP :: TerrainGrid -> (StorableVector Vert_P.Vertex, StorableVector GLuint)
+asVertP terrainGrid =
+    let gridVector' = gridVector terrainGrid
+        verts = SVector.generate (Vector.length gridVector') $ \index ->
+            Vert_P.Vertex { Vert_P.position = gridVector' ! index }
+        indices = indexVector terrainGrid
+    in (verts, indices)
 
 -- | Generate a 'StorableVector' of indices. Usable for creating meshes.
 indexVector :: TerrainGrid -> StorableVector GLuint
