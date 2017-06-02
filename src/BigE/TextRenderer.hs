@@ -12,12 +12,15 @@
 -- functionality.
 module BigE.TextRenderer
     ( TextRenderer
+    , Position (..)
     , RenderParams (..)
+    , defaultRenderParams
     , init
     , render
     , delete
     ) where
 
+import           BigE.Math              (mkTranslate)
 import qualified BigE.Program           as Program
 import           BigE.Runtime           (Render, displayDimensions)
 import qualified BigE.TextRenderer.Font as Font
@@ -41,12 +44,31 @@ data TextRenderer = TextRenderer
     , fontAtlasLoc :: !Location
     } deriving Show
 
+-- | Rendering position. When using 'LeftAt' the upper left corner of the
+-- text will be placed at the coordinates x y given. From the user perspective
+-- the screen coordinates are (-1, -1) at the upper left corner, (0, 0) at the
+-- middle and (1, 1) at the lower right corner.
+data Position
+    = LeftAt !GLfloat !GLfloat
+    deriving Show
+
 -- | Parameters for the rendering.
 data RenderParams = RenderParams
-    { size :: !Int
+    { size     :: !Int
       -- ^ The size of the rendered text. Smallest value is 1, and biggest
       -- value is 30. Will be clamped if outside range.
+
+    , position :: !Position
+      -- ^ Text position.
     } deriving Show
+
+-- | Default set of 'RenderParams'.
+defaultRenderParams :: RenderParams
+defaultRenderParams =
+    RenderParams
+        { size = 10
+        , position = LeftAt (-1) (-1)
+        }
 
 -- | Initialize the 'TextRenderer'.
 init :: MonadIO m => m (Either String TextRenderer)
@@ -78,11 +100,12 @@ delete = Program.delete . program
 -- | Render the 'Text' using the 'TextRenderer'.
 render :: Text -> RenderParams -> TextRenderer -> Render state ()
 render text params textRenderer = do
-    (width, height) <- displayDimensions
+    dim@(width, height) <- displayDimensions
     let aspectRatio = fromIntegral width / fromIntegral height
         size' = fromIntegral $ clamp 1 30 $ size params
         scale = 1 / (31 - size')
-        transform = textTranslate !*! fontScaling scale aspectRatio
+        transform = textTranslate (position params) text dim !*!
+                    fontScaling scale aspectRatio
 
     GL.glEnable GL.GL_BLEND
     GL.glBlendFunc GL.GL_SRC_ALPHA GL.GL_ONE_MINUS_SRC_ALPHA
@@ -110,12 +133,12 @@ fontScaling scale aspectRatio =
        (V4 0 0 scale 0)
        (V4 0 0 0 1)
 
-textTranslate :: M44 GLfloat
-textTranslate =
-    V4 (V4 1 0 0 (-1))
-       (V4 0 1 0 1)
-       (V4 0 0 1 0)
-       (V4 0 0 0 1)
+-- | Make a translation matrix from the given position.
+textTranslate :: Position -> Text -> (Int, Int) -> M44 GLfloat
+textTranslate (LeftAt x y) _text _dimensions =
+    let xTrans = clamp (-1) 1 x
+        yTrans = clamp (-1) 1 (negate y)
+    in mkTranslate $ V3 xTrans yTrans 0
 
 vertexShader :: ByteString
 vertexShader =
