@@ -6,8 +6,12 @@
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
+--
+-- Low level functionality for rendering text on the graphics device. The
+-- application is expected to build higher level abstractions on top of this
+-- functionality.
 module BigE.TextRenderer
-    ( TextRenderer (..)
+    ( TextRenderer
     , RenderParams (..)
     , init
     , render
@@ -21,6 +25,7 @@ import           BigE.TextRenderer.Text (Text (..))
 import qualified BigE.TextRenderer.Text as Text
 import           BigE.Types             (Location, Program, ShaderType (..),
                                          setUniform)
+import           BigE.Util              (clamp)
 import           Control.Monad.IO.Class (MonadIO)
 import           Data.ByteString.Char8  (ByteString)
 import           Graphics.GL            (GLfloat, GLint)
@@ -28,6 +33,7 @@ import qualified Graphics.GL            as GL
 import           Linear                 (M44, V3 (..), V4 (..), (!*!))
 import           Prelude                hiding (init)
 
+-- | TextRenderer record. Opaque to the user.
 data TextRenderer = TextRenderer
     { program      :: !Program
     , transformLoc :: !Location
@@ -35,8 +41,11 @@ data TextRenderer = TextRenderer
     , fontAtlasLoc :: !Location
     } deriving Show
 
+-- | Parameters for the rendering.
 data RenderParams = RenderParams
     { size :: !Int
+      -- ^ The size of the rendered text. Smallest value is 1, and biggest
+      -- value is 30. Will be clamped if outside range.
     } deriving Show
 
 -- | Initialize the 'TextRenderer'.
@@ -92,6 +101,8 @@ render text params textRenderer = do
     Text.disable
     Program.disable
 
+    GL.glDisable GL.GL_BLEND
+
 fontScaling :: GLfloat -> GLfloat -> M44 GLfloat
 fontScaling scale aspectRatio =
     V4 (V4 scale 0 0 0)
@@ -105,9 +116,6 @@ textTranslate =
        (V4 0 1 0 1)
        (V4 0 0 1 0)
        (V4 0 0 0 1)
-
-clamp :: Ord a => a -> a -> a -> a
-clamp mn mx = min mx . max mn
 
 vertexShader :: ByteString
 vertexShader =

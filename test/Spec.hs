@@ -73,4 +73,7 @@ testSuite =
         [ testCase "eitherTwo" eitherTwo
         , testCase "eitherThree" eitherThree
         ]
+    , testGroup "Util tests - clamping"
+        [ testCase "clamp" clamp
+        ]
     ]

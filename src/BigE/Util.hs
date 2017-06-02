@@ -5,9 +5,12 @@
 -- Maintainer: Patrik Sandahl <patrik.sandahl@gmail.com>
 -- Stability: experimental
 -- Portability: portable
+--
+-- Utility functions.
 module BigE.Util
     ( eitherTwo
     , eitherThree
+    , clamp
     ) where
 
 import           Data.Either (isLeft, isRight)
@@ -32,6 +35,10 @@ eitherThree (e1, e2, e3)
     | isLeft e1 = Left (fromLeft e1)
     | isLeft e2 = Left (fromLeft e2)
     | otherwise = Left (fromLeft e3)
+
+-- | clamp min max val: clamp the value to fit the range given by min and max.
+clamp :: Ord a => a -> a -> a -> a
+clamp mn mx = min mx . max mn
 
 -- | The functions below are both partial function, and shall only be used
 -- at places where values are guareded with isLeft or isRight.

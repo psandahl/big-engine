@@ -1,11 +1,12 @@
 module UtilTests
     ( eitherTwo
     , eitherThree
+    , clamp
     ) where
 
 import           Test.HUnit
 
-import qualified BigE.Util as Util
+import qualified BigE.Util  as Util
 
 eitherTwo :: Assertion
 eitherTwo = do
@@ -37,6 +38,13 @@ eitherThree = do
 
     Left "baarf" @=?
         Util.eitherThree (l1, l2, l3)
+
+clamp :: Assertion
+clamp = do
+    (1 :: Int) @=? Util.clamp 1 10 0
+    (1 :: Int) @=? Util.clamp 1 10 1
+    (10 :: Int) @=? Util.clamp 1 10 10
+    (10 :: Int) @=? Util.clamp 1 10 11
 
 r1 :: Either String Int
 r1 = Right 1
