@@ -20,7 +20,7 @@ module BigE.TextRenderer
     , delete
     ) where
 
-import           BigE.Math              (mkTranslate)
+import           BigE.Math              (mkScale, mkTranslate)
 import qualified BigE.Program           as Program
 import           BigE.Runtime           (Render, displayDimensions)
 import qualified BigE.TextRenderer.Font as Font
@@ -33,7 +33,7 @@ import           Control.Monad.IO.Class (MonadIO)
 import           Data.ByteString.Char8  (ByteString)
 import           Graphics.GL            (GLfloat, GLint)
 import qualified Graphics.GL            as GL
-import           Linear                 (M44, V3 (..), V4 (..), (!*!))
+import           Linear                 (M44, V3 (..), (!*!))
 import           Prelude                hiding (init)
 
 -- | TextRenderer record. Opaque to the user.
@@ -44,19 +44,23 @@ data TextRenderer = TextRenderer
     , fontAtlasLoc :: !Location
     } deriving Show
 
--- | Rendering position. When using 'LeftAt' the upper left corner of the
--- text will be placed at the coordinates x y given. From the user perspective
--- the screen coordinates are (-1, -1) at the upper left corner, (0, 0) at the
+-- | Rendering position. From the user perspective the screen coordinates
+-- are (-1, -1) at the upper left corner, (0, 0) at the
 -- middle and (1, 1) at the lower right corner.
 data Position
     = LeftAt !GLfloat !GLfloat
+      -- ^ Position the text with its upper left corner at x, y.
+
+    | CenterAt !GLfloat !GLfloat
+      -- ^ Position the text with its center at x, y.
     deriving Show
 
 -- | Parameters for the rendering.
 data RenderParams = RenderParams
     { size     :: !Int
       -- ^ The size of the rendered text. Smallest value is 1, and biggest
-      -- value is 30. Will be clamped if outside range.
+      -- value is 30. Will be clamped if outside range. The size is specific
+      -- to each font and its basic size.
 
     , position :: !Position
       -- ^ Text position.
@@ -100,11 +104,11 @@ delete = Program.delete . program
 -- | Render the 'Text' using the 'TextRenderer'.
 render :: Text -> RenderParams -> TextRenderer -> Render state ()
 render text params textRenderer = do
-    dim@(width, height) <- displayDimensions
+    (width, height) <- displayDimensions
     let aspectRatio = fromIntegral width / fromIntegral height
         size' = fromIntegral $ clamp 1 30 $ size params
         scale = 1 / (31 - size')
-        transform = textTranslate (position params) text dim !*!
+        transform = textTranslate (position params) text scale !*!
                     fontScaling scale aspectRatio
 
     GL.glEnable GL.GL_BLEND
@@ -126,20 +130,25 @@ render text params textRenderer = do
 
     GL.glDisable GL.GL_BLEND
 
+-- | Make a scaling matrix.
 fontScaling :: GLfloat -> GLfloat -> M44 GLfloat
 fontScaling scale aspectRatio =
-    V4 (V4 scale 0 0 0)
-       (V4 0 (scale * aspectRatio) 0 0)
-       (V4 0 0 scale 0)
-       (V4 0 0 0 1)
+    mkScale $ V3 scale (scale * aspectRatio) scale
 
 -- | Make a translation matrix from the given position.
-textTranslate :: Position -> Text -> (Int, Int) -> M44 GLfloat
-textTranslate (LeftAt x y) _text _dimensions =
+textTranslate :: Position -> Text -> GLfloat -> M44 GLfloat
+textTranslate (LeftAt x y) _text _scale =
     let xTrans = clamp (-1) 1 x
         yTrans = clamp (-1) 1 (negate y)
     in mkTranslate $ V3 xTrans yTrans 0
 
+textTranslate (CenterAt x y) text scale =
+    let xOffset = (scale * gridWidth text / 2)
+        xTrans = clamp (-1) 1 (x - xOffset)
+        yTrans = clamp (-1) 1 (negate y)
+    in mkTranslate $ V3 xTrans yTrans 0
+
+-- | The 'Text's vertex shader.
 vertexShader :: ByteString
 vertexShader =
     "#version 330 core\n\
@@ -158,6 +167,7 @@ vertexShader =
     \}\n\
     \"
 
+-- | The 'Text's fragment shader.
 fragmentShader :: ByteString
 fragmentShader =
     "#version 330 core\n\
