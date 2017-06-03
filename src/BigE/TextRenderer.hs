@@ -41,6 +41,7 @@ data TextRenderer = TextRenderer
     { program      :: !Program
     , transformLoc :: !Location
     , fontColorLoc :: !Location
+    , userAlphaLoc :: !Location
     , fontAtlasLoc :: !Location
     } deriving Show
 
@@ -63,7 +64,17 @@ data RenderParams = RenderParams
       -- to each font and its basic size.
 
     , position :: !Position
-      -- ^ Text position.
+      -- ^ Text position of the text to be rendered. See 'Position' for
+      -- explanation.
+
+    , color    :: !(V3 GLfloat)
+      -- ^ The color r,g,b of the text to be rendered.
+
+    , alpha    :: !GLfloat
+      -- ^ User specified alpha value for the text to be rendered. Iff the
+      -- user specified alpha is lower than the 'Font's bitmap, the user
+      -- specified alpha is selected. Otherwise not. The user specified alpha
+      -- can be used for fading out text.
     } deriving Show
 
 -- | Default set of 'RenderParams'.
@@ -72,6 +83,8 @@ defaultRenderParams =
     RenderParams
         { size = 10
         , position = LeftAt (-1) (-1)
+        , color = V3 1 0 0
+        , alpha = 1
         }
 
 -- | Initialize the 'TextRenderer'.
@@ -86,12 +99,14 @@ init = do
         Right program' -> do
             transformLoc' <- Program.getUniformLocation program' "transform"
             fontColorLoc' <- Program.getUniformLocation program' "fontColor"
+            userAlphaLoc' <- Program.getUniformLocation program' "userAlpha"
             fontAtlasLoc' <- Program.getUniformLocation program' "fontAtlas"
 
             return $ Right TextRenderer
                 { program = program'
                 , transformLoc = transformLoc'
                 , fontColorLoc = fontColorLoc'
+                , userAlphaLoc = userAlphaLoc'
                 , fontAtlasLoc = fontAtlasLoc'
                 }
 
@@ -119,7 +134,8 @@ render text params textRenderer = do
     Font.enable 0 (font text)
 
     setUniform (transformLoc textRenderer) transform
-    setUniform (fontColorLoc textRenderer) (V3 1 0 0 :: V3 GLfloat)
+    setUniform (fontColorLoc textRenderer) (color params)
+    setUniform (userAlphaLoc textRenderer) (clamp 0 1 $ alpha params)
     setUniform (fontAtlasLoc textRenderer) (0 :: GLint)
 
     Text.render text
@@ -174,13 +190,14 @@ fragmentShader =
     \\n\
     \in vec2 vTexCoord;\n\
     \uniform vec3 fontColor;\n\
+    \uniform float userAlpha;\n\
     \uniform sampler2D fontAtlas;\n\
     \\n\
     \out vec4 color;\n\
     \\n\
     \void main()\n\
     \{\n\
-    \  float alpha = texture(fontAtlas, vTexCoord).a;\n\
-    \  color = vec4(fontColor, alpha);\n\
+    \  float bitmapAlpha = texture(fontAtlas, vTexCoord).a;\n\
+    \  color = vec4(fontColor, min(bitmapAlpha, userAlpha));\n\
     \}\n\
     \"
