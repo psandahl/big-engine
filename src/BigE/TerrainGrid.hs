@@ -96,13 +96,14 @@ lookup (x, z) terrainGrid =
 
 -- | Calculate the height - y - under the 2D position given by x and z. The
 -- grid's origin is always at x = 0, z = 0. If the given position is outside
--- of the grid the height of zero is returned.
+-- of the grid the height of zero is returned. If the grid not is placed at
+-- 0, 0 in model space it is up to the application to do that mapping.
 terrainHeight :: (Float, Float) -> TerrainGrid -> GLfloat
 terrainHeight (x, z) terrainGrid =
     let (baseX, fracX) = splitFloat x
         (baseZ, fracZ) = splitFloat z
         (width, height) = quadGridSize terrainGrid
-    in if baseX < width && baseZ < height
+    in if baseX >= 0 && baseX < width && baseZ >= 0 && baseZ < height
            then
                let (p1, p2, p3) = triSelect baseX baseZ $ fracX + fracZ
                in baryCentricHeight p1 p2 p3 x z
