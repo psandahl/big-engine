@@ -17,10 +17,11 @@ module BigE.Math
     , mkScale
     , mkRotateTranslate
     , mkRotate
+    , surfaceNormal
     ) where
 
-import           Linear (Epsilon, M44, V3 (..), V4 (..), axisAngle,
-                         mkTransformation, perspective, zero)
+import           Linear (Epsilon, M44, V3 (..), V4 (..), axisAngle, cross,
+                         mkTransformation, normalize, perspective, zero)
 
 -- | Convert degrees to radians.
 toRadians :: Floating a => a -> a
@@ -77,3 +78,12 @@ mkRotateTranslate axis theta = mkTransformation (axisAngle axis theta)
 -- | Utility function to setup a rotation matrix.
 mkRotate :: (Epsilon a, Floating a) => V3 a -> a -> M44 a
 mkRotate axis theta = mkRotateTranslate axis theta zero
+
+-- | The normal of the surface given by the vertices' triangle. The assumption
+-- is that the triangle's vertices are given in the same order as the triangle
+-- is rendered.
+surfaceNormal :: (Epsilon a, Floating a) =>  V3 a -> V3 a -> V3 a -> V3 a
+surfaceNormal v1 v2 v3 =
+    let vec1 = v2 - v1
+        vec2 = v3 - v1
+    in normalize $ vec1 `cross` vec2

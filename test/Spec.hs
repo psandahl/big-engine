@@ -64,10 +64,15 @@ testSuite =
         [ testCase "Conversion to radians" toRadiansConversion
         , testCase "Conversion to degrees" toDegreesConversion
         ]
-    , testGroup "Math tests - bary centric coordinates"
+    , testGroup "Math tests - barycentric coordinates"
         [ testCase "Always height 0 in flat triangle" heightInFlatTriangle
         , testCase "Height in triangle skewed on Z-axis" heightInZSkewedTriangle
         , testCase "Height in triangle skewed in X-axis" heightInXSkewedTriangle
+        ]
+    , testGroup "Math tests - surface normals"
+        [ testCase "Calculate surface normals for front facing" frontFacingNormals
+        , testCase "Calculate surface normals for 90 deg away facing triangles"
+                   differentFacingNormals
         ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo
