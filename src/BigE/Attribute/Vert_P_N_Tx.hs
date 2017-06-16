@@ -10,14 +10,14 @@ module BigE.Attribute.Vert_P_N_Tx
     ( Vertex (..)
     ) where
 
---import           BigE.Attribute       (Attribute (..), allocBoundBuffers,
---                                       fillBoundVBO, pointerOffset)
---import           Control.Monad        (unless)
---import qualified Data.Vector.Storable as Vector
-import           Foreign     (Storable (..), castPtr, plusPtr)
-import           Graphics.GL (GLfloat)
---import qualified Graphics.GL          as GL
-import           Linear      (V2, V3)
+import           BigE.Attribute       (Attribute (..), allocBoundBuffers,
+                                       fillBoundVBO, pointerOffset)
+import           Control.Monad        (unless)
+import qualified Data.Vector.Storable as Vector
+import           Foreign              (Storable (..), castPtr, plusPtr)
+import           Graphics.GL          (GLfloat)
+import qualified Graphics.GL          as GL
+import           Linear               (V2, V3)
 
 -- | A convenience definition of a vertex containing three attributes.
 -- The vertex position, the vertex normal and the texture coordinates.
@@ -48,3 +48,32 @@ instance Storable Vertex where
         poke pPtr $ position v
         poke nPtr $ normal v
         poke tPtr $ texCoord v
+
+-- | Attribute instance.
+instance Attribute Vertex where
+    initAttributes bufferUsage vertices = do
+        buffers <- allocBoundBuffers
+        unless (Vector.null vertices) $ do
+            item <- fillBoundVBO vertices bufferUsage
+            let itemSize = fromIntegral $ sizeOf item
+
+            -- Position.
+            GL.glEnableVertexAttribArray 0
+            GL.glVertexAttribPointer 0 3 GL.GL_FLOAT GL.GL_FALSE
+                                     itemSize
+                                     (pointerOffset 0)
+
+            -- Normal.
+            GL.glEnableVertexAttribArray 1
+            GL.glVertexAttribPointer 1 3 GL.GL_FLOAT GL.GL_FALSE
+                                     itemSize
+                                     (pointerOffset $ sizeOf (position item))
+
+            -- Texture coordinates.
+            GL.glEnableVertexAttribArray 2
+            GL.glVertexAttribPointer 2 2 GL.GL_FLOAT GL.GL_FALSE
+                                     itemSize
+                                     (pointerOffset $ sizeOf (position item) +
+                                                      sizeOf (normal item))
+
+        return buffers

@@ -51,11 +51,13 @@ instance Attribute Vertex where
             item <- fillBoundVBO vertices bufferUsage
             let itemSize = fromIntegral $ sizeOf item
 
+            -- Position.
             GL.glEnableVertexAttribArray 0
             GL.glVertexAttribPointer 0 3 GL.GL_FLOAT GL.GL_FALSE
                                      itemSize
                                      (pointerOffset 0)
 
+            -- Texture coordinates.
             GL.glEnableVertexAttribArray 1
             GL.glVertexAttribPointer 1 2 GL.GL_FLOAT GL.GL_FALSE
                                      itemSize
