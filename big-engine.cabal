@@ -46,6 +46,7 @@ library
                        BigE.Attribute.Vert_P_C
                        BigE.Attribute.Vert_P_Tx
                        BigE.Attribute.Vert_P_N_Tx
+                       BigE.Attribute.Vert_P_N_Tx_C
                        BigE.TextRenderer
                        BigE.TextRenderer.Font
                        BigE.TextRenderer.Text

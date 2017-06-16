@@ -29,6 +29,9 @@ testSuite =
         , testCase "vert_P_N_Tx sizeOf == 32" vertP_N_Tx_sizeOf
         , testCase "Vert_P_N_Tx alignment == 4" vertP_N_Tx_alignment
         , testCase "vertP_N_Tx_encodeDecode equals" vertP_N_Tx_encodeDecode
+        , testCase "vertP_N_Tx_C sizeOf == 48" vertP_N_Tx_C_sizeOf
+        , testCase "vertP_N_Tx_C_alignment == 4" vertP_N_Tx_C_alignment
+        , testCase "vertP_N_Tx_C_encodeDecode equals" vertP_N_Tx_C_encodeDecode
         ]
     , testGroup "Font Parser tests"
         [ testCase "Parse Font Files" parseFontFile
