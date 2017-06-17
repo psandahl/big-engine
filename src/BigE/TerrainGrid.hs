@@ -19,19 +19,22 @@ module BigE.TerrainGrid
     , lookup
     , terrainHeight
     , asVertP
+    , asVertPNTxC
     , indexVector
     ) where
 
-import qualified BigE.Attribute.Vert_P as Vert_P
-import           BigE.ImageMap         (ImageElement (..), ImageMap,
-                                        PixelRGB8 (..), elementAt, imageSize)
-import           BigE.Math             (baryCentricHeight)
-import           Data.Vector           (Vector, (!))
-import qualified Data.Vector           as Vector
-import qualified Data.Vector.Storable  as SVector
-import           Graphics.GL           (GLfloat, GLuint)
-import           Linear                (V3 (..))
-import           Prelude               hiding (lookup)
+import qualified BigE.Attribute.Vert_P        as Vert_P
+import qualified BigE.Attribute.Vert_P_N_Tx_C as Vert_P_N_Tx_C
+import           BigE.ImageMap                (ImageElement (..), ImageMap,
+                                               PixelRGB8 (..), elementAt,
+                                               imageSize)
+import           BigE.Math                    (baryCentricHeight)
+import           Data.Vector                  (Vector, (!))
+import qualified Data.Vector                  as Vector
+import qualified Data.Vector.Storable         as SVector
+import           Graphics.GL                  (GLfloat, GLuint)
+import           Linear                       (V3 (..))
+import           Prelude                      hiding (lookup)
 
 -- | The terrain grid. Upper left corner of the grid is always at 0, 0. To
 -- move the grid elsewhere require translation.
@@ -135,6 +138,17 @@ asVertP terrainGrid =
             Vert_P.Vertex { Vert_P.position = gridVector' ! index }
         indices = indexVector terrainGrid
     in (verts, indices)
+
+-- | Export the 'TerrainGrid' as a vector of 'Vert_P_N_Tx_C.Vertex' and a
+-- corresponding index vector. The resulting vertices will be colored according
+-- to the 'ImageMap', they will have texture coordinates and generated normals
+-- for smooth shading. If the sizes of the 'ImageMap' and the 'TerrainGrid'
+-- does not match the export will fail.
+asVertPNTxC :: ImageMap -> TerrainGrid
+            -> Either String ( StorableVector Vert_P_N_Tx_C.Vertex
+                             , StorableVector GLuint
+                             )
+asVertPNTxC _imageMap _terrainGrid = Left "foo"
 
 -- | Generate a 'StorableVector' of indices. Usable for creating meshes.
 indexVector :: TerrainGrid -> StorableVector GLuint

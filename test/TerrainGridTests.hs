@@ -8,19 +8,21 @@ module TerrainGridTests
     , indicesFor1x1Quad
     , indicesFor2x1Quad
     , indicesFor2x2Quad
+    , exportAsVertP
     ) where
 
 import           Test.HUnit
 import           Test.HUnit.Approx
 
-import           BigE.ImageMap        (fromVector)
-import           BigE.TerrainGrid     (fromImageMap, indexVector, lookup,
-                                       quadGridSize, terrainHeight,
-                                       verticeGridSize)
-import qualified Data.Vector          as Vector
-import qualified Data.Vector.Storable as SVector
-import           Linear               (V3 (..))
-import           Prelude              hiding (lookup)
+import qualified BigE.Attribute.Vert_P as Vert_P
+import           BigE.ImageMap         (ImageMap, fromVector)
+import           BigE.TerrainGrid      (TerrainGrid, asVertP, fromImageMap,
+                                        indexVector, lookup, quadGridSize,
+                                        terrainHeight, verticeGridSize)
+import qualified Data.Vector           as Vector
+import qualified Data.Vector.Storable  as SVector
+import           Linear                (V3 (..))
+import           Prelude               hiding (lookup)
 
 -- | An input ImageMap must be at least 2, 2 big. In this test case
 -- the input is too small and the creation shall fail
@@ -130,6 +132,61 @@ indicesFor2x2Quad = do
                      , 2, 1, 4, 2, 4, 5
                      , 4, 3, 6, 4, 6, 7
                      , 5, 4, 7, 5, 7, 8 ] @=? indexVector terrainGrid
+
+-- | Export a terrain map as a Vert_P. Use indexing into the vertice ve
+exportAsVertP :: Assertion
+exportAsVertP = do
+    let (verts, indices) = asVertP mkTerrainGrid
+    9 @=? SVector.length verts
+    24 @=? SVector.length indices
+
+    -- Row 1
+    let v0 = SVector.unsafeIndex verts 0
+    V3 0 0 0 @=? Vert_P.position v0
+
+    let v1 = SVector.unsafeIndex verts 1
+    V3 1 0 0 @=? Vert_P.position v1
+
+    let v2 = SVector.unsafeIndex verts 2
+    V3 2 0 0 @=? Vert_P.position v2
+
+    -- Row 2.
+    let v3 = SVector.unsafeIndex verts 3
+    V3 0 1 1 @=? Vert_P.position v3
+
+    let v4 = SVector.unsafeIndex verts 4
+    V3 1 1 1 @=? Vert_P.position v4
+
+    let v5 = SVector.unsafeIndex verts 5
+    V3 2 1 1 @=? Vert_P.position v5
+
+    -- Row 3.
+    let v6 = SVector.unsafeIndex verts 6
+    V3 0 0 2 @=? Vert_P.position v6
+
+    let v7 = SVector.unsafeIndex verts 7
+    V3 1 0 2 @=? Vert_P.position v7
+
+    let v8 = SVector.unsafeIndex verts 8
+    V3 2 0 2 @=? Vert_P.position v8
+
+-- | Make terrain grid for export testing.
+mkTerrainGrid :: TerrainGrid
+mkTerrainGrid =
+    let Right terrainGrid = fromImageMap 1 mkHeightMap
+    in terrainGrid
+
+-- | Make an image map representing a height map with a grid of 3, 3. On the
+-- second row there's a "ridge".
+mkHeightMap :: ImageMap
+mkHeightMap =
+    let Right heightMap =
+                fromVector (3, 3) $
+                    Vector.fromList [ 0, 0, 0
+                                    , 1, 1, 1
+                                    , 0, 0, 0
+                                    ]
+    in heightMap
 
 equalTo :: Float -> Float -> Assertion
 equalTo = assertApproxEqual "Shall be equal" closeEnough
