@@ -48,6 +48,7 @@ data FileSpec
 -- | Specification of the 'ImageMap' to be constructed from 'Vector'.
 data VectorSpec
     = Raw16Vector !(Int, Int) !(Vector Pixel16)
+    -- | RGBVector !(Int, Int) !(Vector PixelRGB8)
     deriving Show
 
 -- | The value of an image element - "pixel".
@@ -56,12 +57,15 @@ data ImageElement
     | RGB !PixelRGB8
     deriving (Eq, Show)
 
+data ImageDescriptor a = ImageDescriptor
+    { width   :: !Int
+    , height  :: !Int
+    , storage :: !(Vector a)
+    }
+
 -- | The internal representation of an 'ImageMap'.
 data ImageImplementation
-    = RawImage { width   :: !Int
-               , height  :: !Int
-               , storage :: !(Vector Pixel16)
-               }
+    = RawImage !(ImageDescriptor Pixel16)
     | RGBImage !(Image PixelRGB8)
 
 -- | Create an 'ImageMap' from file.
@@ -79,16 +83,21 @@ fromFile (RGB8File file) =
 fromVector :: VectorSpec -> Either String ImageMap
 fromVector (Raw16Vector (w, h) vec)
     | w * h == Vector.length vec =
-        Right $ ImageMap RawImage { width = w, height = h, storage = vec }
+        Right $ ImageMap $
+            RawImage ImageDescriptor
+                { width = w
+                , height = h
+                , storage = vec
+                }
     | otherwise = Left "Specified dimension don't match vector"
 
 -- | Get the element at x, y.
 elementAt :: Int -> Int -> ImageMap -> ImageElement
 
 -- Raw file flavour.
-elementAt x y (ImageMap (RawImage w _h vec)) =
-    let idx = w * y + x
-        val = vec ! idx
+elementAt x y (ImageMap (RawImage imageDesc)) =
+    let idx = width imageDesc * y + x
+        val = storage imageDesc ! idx
     in Raw val
 
 -- RGB image. Let JuicyPixels take care of the details.
@@ -96,7 +105,7 @@ elementAt x y (ImageMap (RGBImage img)) = RGB $ pixelAt img x y
 
 -- | Get the 'ImageMap's size in pixels, (width, height).
 imageSize :: ImageMap -> (Int, Int)
-imageSize (ImageMap (RawImage w h _vec)) = (w, h)
+imageSize (ImageMap (RawImage imageDesc)) = (width imageDesc, height imageDesc)
 imageSize (ImageMap (RGBImage img))      = (imageWidth img, imageHeight img)
 
 -- | Read a raw file.
@@ -107,8 +116,8 @@ fromRawFile (w, h) file = do
     case eVector of
         Right vec
             | w * h == Vector.length vec ->
-                return $ Right
-                    RawImage
+                return $ Right $
+                    RawImage ImageDescriptor
                         { width = w
                         , height = h
                         , storage = vec
