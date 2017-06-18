@@ -9,13 +9,14 @@ module TerrainGridTests
     , indicesFor2x1Quad
     , indicesFor2x2Quad
     , exportAsVertP
+    , exportAsVertPNTxCFailing
     ) where
 
 import           Test.HUnit
 import           Test.HUnit.Approx
 
 import qualified BigE.Attribute.Vert_P as Vert_P
-import           BigE.ImageMap         (ImageMap, fromVector)
+import           BigE.ImageMap         (ImageMap, VectorSpec (..), fromVector)
 import           BigE.TerrainGrid      (TerrainGrid, asVertP, fromImageMap,
                                         indexVector, lookup, quadGridSize,
                                         terrainHeight, verticeGridSize)
@@ -28,7 +29,7 @@ import           Prelude               hiding (lookup)
 -- the input is too small and the creation shall fail
 withTooSmallImageMap :: Assertion
 withTooSmallImageMap = do
-    let Right imageMap = fromVector (1, 1) $ Vector.fromList [1]
+    let Right imageMap = fromVector (Raw16Vector (1, 1) $ Vector.fromList [1])
     case fromImageMap 1 imageMap of
         Right _ -> assertBool "Shall fail" False
         Left _  -> assertBool "Shall fail" True
@@ -36,7 +37,7 @@ withTooSmallImageMap = do
 -- | Minimum size of input ImageMap. Creation shall succeed.
 withMinimumImageMap :: Assertion
 withMinimumImageMap = do
-    let Right imageMap = fromVector (2, 2) $ Vector.fromList [1, 2, 3, 4]
+    let Right imageMap = fromVector (Raw16Vector (2, 2) $ Vector.fromList [1, 2, 3, 4])
     case fromImageMap 1 imageMap of
         Right _ -> assertBool "Shall succeed" True
         Left _  -> assertBool "Shall succeed" False
@@ -45,7 +46,7 @@ withMinimumImageMap = do
 -- the vertice grid and a smaller size for the quad grid.
 reportingSize :: Assertion
 reportingSize = do
-    let Right imageMap = fromVector (3, 2) $ Vector.fromList [1, 2, 3, 4, 5, 6]
+    let Right imageMap = fromVector (Raw16Vector (3, 2) $ Vector.fromList [1, 2, 3, 4, 5, 6])
         Right terrainGrid = fromImageMap 1 imageMap
     (3, 2) @=? verticeGridSize terrainGrid
     (2, 1) @=? quadGridSize terrainGrid
@@ -54,8 +55,8 @@ reportingSize = do
 -- at the vertices.
 checkingContent :: Assertion
 checkingContent = do
-    let Right imageMap = fromVector (3, 3) $
-            Vector.fromList [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    let Right imageMap = fromVector (Raw16Vector (3, 3) $
+            Vector.fromList [1, 2, 3, 4, 5, 6, 7, 8, 9])
         Right terrainGrid = fromImageMap 1 imageMap
 
     -- First row
@@ -77,7 +78,7 @@ checkingContent = do
 -- the size shall be 0.
 indexingOutsideGrid :: Assertion
 indexingOutsideGrid = do
-    let Right imageMap = fromVector (2, 2) $ Vector.fromList [1, 1, 1, 1]
+    let Right imageMap = fromVector (Raw16Vector (2, 2) $ Vector.fromList [1, 1, 1, 1])
         Right terrainGrid = fromImageMap 1 imageMap
     -- Inside grid.
     1 `equalTo` terrainHeight (0.0, 0.0) terrainGrid
@@ -95,7 +96,7 @@ indexingOutsideGrid = do
 -- triangle is selected.
 selectingCorrectTriangle :: Assertion
 selectingCorrectTriangle = do
-    let Right imageMap = fromVector (2, 2) $ Vector.fromList [0, 1, 0, 1]
+    let Right imageMap = fromVector (Raw16Vector (2, 2) $ Vector.fromList [0, 1, 0, 1])
         Right terrainGrid = fromImageMap 1 imageMap
     -- To the left edge. Shall be 0.
     0 `equalTo` terrainHeight (0.0, 0.5) terrainGrid
@@ -106,7 +107,7 @@ selectingCorrectTriangle = do
 -- | Generate indices for a 1x1 quad grid.
 indicesFor1x1Quad :: Assertion
 indicesFor1x1Quad = do
-    let Right imageMap = fromVector (2, 2) $ Vector.fromList [0, 0, 0, 0]
+    let Right imageMap = fromVector (Raw16Vector (2, 2) $ Vector.fromList [0, 0, 0, 0])
         Right terrainGrid = fromImageMap 1 imageMap
 
     SVector.fromList [1, 0, 2, 1, 2, 3] @=? indexVector terrainGrid
@@ -114,7 +115,7 @@ indicesFor1x1Quad = do
 -- | Generate indices for a 2x1 quad grid.
 indicesFor2x1Quad :: Assertion
 indicesFor2x1Quad = do
-    let Right imageMap = fromVector (3, 2) $ Vector.fromList [0, 0, 0, 0, 0, 0]
+    let Right imageMap = fromVector (Raw16Vector (3, 2) $ Vector.fromList [0, 0, 0, 0, 0, 0])
         Right terrainGrid = fromImageMap 1 imageMap
 
     SVector.fromList [ 1, 0, 3, 1, 3, 4
@@ -123,9 +124,9 @@ indicesFor2x1Quad = do
 -- | Generate indices for a 2x2 quad grid.
 indicesFor2x2Quad :: Assertion
 indicesFor2x2Quad = do
-    let Right imageMap = fromVector (3, 3) $ Vector.fromList [ 0, 0, 0, 0, 0, 0
-                                                             , 0, 0, 0
-                                                             ]
+    let Right imageMap =
+                fromVector (Raw16Vector (3, 3) $
+                    Vector.fromList [ 0, 0, 0, 0, 0, 0 , 0, 0, 0 ])
         Right terrainGrid = fromImageMap 1 imageMap
 
     SVector.fromList [ 1, 0, 3, 1, 3, 4
@@ -170,6 +171,11 @@ exportAsVertP = do
     let v8 = SVector.unsafeIndex verts 8
     V3 2 0 2 @=? Vert_P.position v8
 
+-- | The vertice dimensions of the terrain grid and the image map must equal.
+exportAsVertPNTxCFailing :: Assertion
+exportAsVertPNTxCFailing = undefined
+    --Left "Dimensions must match" @=? asVertPNTxC mkTerrainGrid
+
 -- | Make terrain grid for export testing.
 mkTerrainGrid :: TerrainGrid
 mkTerrainGrid =
@@ -181,11 +187,11 @@ mkTerrainGrid =
 mkHeightMap :: ImageMap
 mkHeightMap =
     let Right heightMap =
-                fromVector (3, 3) $
+                fromVector (Raw16Vector (3, 3) $
                     Vector.fromList [ 0, 0, 0
                                     , 1, 1, 1
                                     , 0, 0, 0
-                                    ]
+                                    ])
     in heightMap
 
 equalTo :: Float -> Float -> Assertion

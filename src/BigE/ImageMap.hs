@@ -14,6 +14,7 @@
 module BigE.ImageMap
     ( ImageMap
     , FileSpec (..)
+    , VectorSpec (..)
     , ImageElement (..)
     , Pixel16
     , PixelRGB8 (..)
@@ -44,6 +45,11 @@ data FileSpec
     | Raw16File !(Int, Int) !FilePath
     deriving Show
 
+-- | Specification of the 'ImageMap' to be constructed from 'Vector'.
+data VectorSpec
+    = Raw16Vector !(Int, Int) !(Vector Pixel16)
+    deriving Show
+
 -- | The value of an image element - "pixel".
 data ImageElement
     = Raw !Pixel16
@@ -70,8 +76,8 @@ fromFile (RGB8File file) =
     fmap (ImageMap . RGBImage . convertRGB8) <$> liftIO (readImage file)
 
 -- | Create 'ImageMap' from a Vector. Dimensions are (width, size).
-fromVector :: (Int, Int) -> Vector Pixel16 -> Either String ImageMap
-fromVector (w, h) vec
+fromVector :: VectorSpec -> Either String ImageMap
+fromVector (Raw16Vector (w, h) vec)
     | w * h == Vector.length vec =
         Right $ ImageMap RawImage { width = w, height = h, storage = vec }
     | otherwise = Left "Specified dimension don't match vector"
