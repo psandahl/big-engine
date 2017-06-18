@@ -148,7 +148,7 @@ asVertPNTxC :: ImageMap -> TerrainGrid
             -> Either String ( StorableVector Vert_P_N_Tx_C.Vertex
                              , StorableVector GLuint
                              )
-asVertPNTxC _imageMap _terrainGrid = Left "foo"
+asVertPNTxC _imageMap _terrainGrid = Left "Dimensions must match"
 
 -- | Generate a 'StorableVector' of indices. Usable for creating meshes.
 indexVector :: TerrainGrid -> StorableVector GLuint

@@ -9,17 +9,19 @@ module TerrainGridTests
     , indicesFor2x1Quad
     , indicesFor2x2Quad
     , exportAsVertP
-    , exportAsVertPNTxCFailing
+    , exportAsVertPNTxCFailDimensions
     ) where
 
 import           Test.HUnit
 import           Test.HUnit.Approx
 
 import qualified BigE.Attribute.Vert_P as Vert_P
-import           BigE.ImageMap         (ImageMap, VectorSpec (..), fromVector)
-import           BigE.TerrainGrid      (TerrainGrid, asVertP, fromImageMap,
-                                        indexVector, lookup, quadGridSize,
-                                        terrainHeight, verticeGridSize)
+import           BigE.ImageMap         (ImageMap, PixelRGB8 (..),
+                                        VectorSpec (..), fromVector)
+import           BigE.TerrainGrid      (TerrainGrid, asVertP, asVertPNTxC,
+                                        fromImageMap, indexVector, lookup,
+                                        quadGridSize, terrainHeight,
+                                        verticeGridSize)
 import qualified Data.Vector           as Vector
 import qualified Data.Vector.Storable  as SVector
 import           Linear                (V3 (..))
@@ -172,9 +174,10 @@ exportAsVertP = do
     V3 2 0 2 @=? Vert_P.position v8
 
 -- | The vertice dimensions of the terrain grid and the image map must equal.
-exportAsVertPNTxCFailing :: Assertion
-exportAsVertPNTxCFailing = undefined
-    --Left "Dimensions must match" @=? asVertPNTxC mkTerrainGrid
+exportAsVertPNTxCFailDimensions :: Assertion
+exportAsVertPNTxCFailDimensions = do
+    let Right imageMap = fromVector (RGBVector (1, 1) $ Vector.fromList [PixelRGB8 1 1 1] )
+    Left "Dimensions must match" @=? asVertPNTxC imageMap mkTerrainGrid
 
 -- | Make terrain grid for export testing.
 mkTerrainGrid :: TerrainGrid

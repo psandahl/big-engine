@@ -63,6 +63,8 @@ testSuite =
         , testCase "Index vector for 2x1 grid" TerrainGridTests.indicesFor2x1Quad
         , testCase "Index vector for 2x2 grid" TerrainGridTests.indicesFor2x2Quad
         , testCase "As VertP" TerrainGridTests.exportAsVertP
+        , testCase "As VertPNTxC fail on dimensions"
+                   TerrainGridTests.exportAsVertPNTxCFailDimensions
         ]
     , testGroup "Math tests - angle conversions"
         [ testCase "Conversion to radians" toRadiansConversion
