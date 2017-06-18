@@ -48,7 +48,7 @@ data FileSpec
 -- | Specification of the 'ImageMap' to be constructed from 'Vector'.
 data VectorSpec
     = Raw16Vector !(Int, Int) !(Vector Pixel16)
-    -- | RGBVector !(Int, Int) !(Vector PixelRGB8)
+    | RGBVector !(Int, Int) !(Vector PixelRGB8)
     deriving Show
 
 -- | The value of an image element - "pixel".
@@ -57,6 +57,7 @@ data ImageElement
     | RGB !PixelRGB8
     deriving (Eq, Show)
 
+-- | Internal descriptor of a vector constructed image.
 data ImageDescriptor a = ImageDescriptor
     { width   :: !Int
     , height  :: !Int
@@ -66,6 +67,7 @@ data ImageDescriptor a = ImageDescriptor
 -- | The internal representation of an 'ImageMap'.
 data ImageImplementation
     = RawImage !(ImageDescriptor Pixel16)
+    | RGBVectorImage !(ImageDescriptor PixelRGB8)
     | RGBImage !(Image PixelRGB8)
 
 -- | Create an 'ImageMap' from file.
@@ -81,10 +83,16 @@ fromFile (RGB8File file) =
 
 -- | Create 'ImageMap' from a Vector. Dimensions are (width, size).
 fromVector :: VectorSpec -> Either String ImageMap
-fromVector (Raw16Vector (w, h) vec)
+fromVector (Raw16Vector dimensions vec) = fromVector' dimensions vec RawImage
+fromVector (RGBVector dimensions vec) = fromVector' dimensions vec RGBVectorImage
+
+-- | Help function to make vector initialized image maps.
+fromVector' :: (Int, Int) -> Vector a
+            -> (ImageDescriptor a -> ImageImplementation) -> Either String ImageMap
+fromVector' (w, h) vec ctor
     | w * h == Vector.length vec =
         Right $ ImageMap $
-            RawImage ImageDescriptor
+            ctor ImageDescriptor
                 { width = w
                 , height = h
                 , storage = vec
@@ -100,12 +108,19 @@ elementAt x y (ImageMap (RawImage imageDesc)) =
         val = storage imageDesc ! idx
     in Raw val
 
+-- RGB vector flavour.
+elementAt x y (ImageMap (RGBVectorImage imageDesc)) =
+    let idx = width imageDesc * y + x
+        val = storage imageDesc ! idx
+    in RGB val
+
 -- RGB image. Let JuicyPixels take care of the details.
 elementAt x y (ImageMap (RGBImage img)) = RGB $ pixelAt img x y
 
 -- | Get the 'ImageMap's size in pixels, (width, height).
 imageSize :: ImageMap -> (Int, Int)
 imageSize (ImageMap (RawImage imageDesc)) = (width imageDesc, height imageDesc)
+imageSize (ImageMap (RGBVectorImage imageDesc)) = (width imageDesc, height imageDesc)
 imageSize (ImageMap (RGBImage img))      = (imageWidth img, imageHeight img)
 
 -- | Read a raw file.
