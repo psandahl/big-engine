@@ -16,18 +16,19 @@ module TerrainGridTests
 import           Test.HUnit
 import           Test.HUnit.Approx
 
-import qualified BigE.Attribute.Vert_P as Vert_P
+import qualified BigE.Attribute.Vert_P        as Vert_P
 import qualified BigE.Attribute.Vert_P_N_Tx_C as Vert_P_N_Tx_C
-import           BigE.ImageMap         (ImageMap, PixelRGB8 (..),
-                                        VectorSpec (..), fromVector)
-import           BigE.TerrainGrid      (TerrainGrid, asVertP, asVertPNTxC,
-                                        fromImageMap, indexVector, lookup,
-                                        quadGridSize, terrainHeight,
-                                        verticeGridSize)
-import qualified Data.Vector           as Vector
-import qualified Data.Vector.Storable  as SVector
-import           Linear                (V3 (..), V4 (..))
-import           Prelude               hiding (lookup)
+import           BigE.ImageMap                (ImageMap, PixelRGB8 (..),
+                                               VectorSpec (..), fromVector)
+import           BigE.TerrainGrid             (TerrainGrid, asVertP,
+                                               asVertPNTxC, fromImageMap,
+                                               indexVector, lookup,
+                                               quadGridSize, terrainHeight,
+                                               verticeGridSize)
+import qualified Data.Vector                  as Vector
+import qualified Data.Vector.Storable         as SVector
+import           Linear                       (V3 (..), V4 (..))
+import           Prelude                      hiding (lookup)
 
 -- | An input ImageMap must be at least 2, 2 big. In this test case
 -- the input is too small and the creation shall fail
@@ -240,9 +241,9 @@ mkColorMap =
     let Right colorMap =
                 fromVector (RGBVector (3, 3) $
                     Vector.fromList
-                        [ PixelRGB8 1 0 0, PixelRGB8 1 0 0, PixelRGB8 0 0 1
-                        , PixelRGB8 1 0 0, PixelRGB8 0 0 1, PixelRGB8 0 1 0
-                        , PixelRGB8 0 0 1, PixelRGB8 0 1 0, PixelRGB8 0 1 0
+                        [ PixelRGB8 255 0 0, PixelRGB8 255 0 0, PixelRGB8 0 0 255
+                        , PixelRGB8 255 0 0, PixelRGB8 0 0 255, PixelRGB8 0 255 0
+                        , PixelRGB8 0 0 255, PixelRGB8 0 255 0, PixelRGB8 0 255 0
                         ])
     in colorMap
 
