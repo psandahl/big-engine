@@ -152,17 +152,20 @@ asVertPNTxC imageMap terrainGrid
     | imageSize imageMap == verticeGridSize terrainGrid =
         let gridVector' = gridVector terrainGrid
             width = gridWidth terrainGrid
+            height = gridHeight terrainGrid
 
-            -- First phase. Set position and default values for the other
-            -- fields.
+            -- First phase. Set position, texCoord and color. Leave normal with a
+            -- zero vector.
             verts = SVector.generate (Vector.length gridVector') $ \index ->
-                Vert_P_N_Tx_C.Vertex
-                    { Vert_P_N_Tx_C.position = gridVector' ! index
-                    , Vert_P_N_Tx_C.normal = V3 0 0 0
-                    , Vert_P_N_Tx_C.texCoord = V2 0 0
-                    , Vert_P_N_Tx_C.color =
-                        toRGBA $ elementAt (index `div` width) (index `mod` width ) imageMap
-                    }
+                let row = index `div` width
+                    col = index `mod` width
+                    t = height - row - 1
+                in Vert_P_N_Tx_C.Vertex
+                       { Vert_P_N_Tx_C.position = gridVector' ! index
+                       , Vert_P_N_Tx_C.normal = V3 0 0 0
+                       , Vert_P_N_Tx_C.texCoord = V2 (fromIntegral col) (fromIntegral t)
+                       , Vert_P_N_Tx_C.color = toRGBA $ elementAt row col imageMap
+                       }
 
             -- Make indices.
             indices = indexVector terrainGrid
