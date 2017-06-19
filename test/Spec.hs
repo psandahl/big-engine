@@ -47,6 +47,8 @@ testSuite =
         , testCase "Created with right dimensions" ImageMapTests.withRightDimensions
         , testCase "Reporting the expected size" ImageMapTests.reportingSize
         , testCase "Finding elements" ImageMapTests.findingElements
+        , testCase "ImageElement to RGB" ImageMapTests.elementToRGB
+        , testCase "ImageElement to RGBA" ImageMapTests.elementToRGBA
         ]
     , testGroup "TerrainGrid tests - construction"
         [ testCase "Create with too small ImageMap" TerrainGridTests.withTooSmallImageMap

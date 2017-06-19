@@ -22,9 +22,11 @@ module BigE.ImageMap
     , fromVector
     , elementAt
     , imageSize
+    , toRGB
+    , toRGBA
     ) where
 
-import           Codec.Picture              (Image (..), Pixel16,
+import           Codec.Picture              (Image (..), Pixel16, Pixel8,
                                              PixelRGB8 (..), convertRGB8,
                                              pixelAt, readImage)
 import           Control.Exception          (SomeException, try)
@@ -34,6 +36,7 @@ import           Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as ByteString
 import           Data.Vector                (Vector, (!))
 import qualified Data.Vector                as Vector
+import           Linear                     (V3 (..), V4, point)
 
 -- | An image map. Usable for e.g. height maps or color maps.
 newtype ImageMap = ImageMap ImageImplementation
@@ -122,6 +125,32 @@ imageSize :: ImageMap -> (Int, Int)
 imageSize (ImageMap (RawImage imageDesc)) = (width imageDesc, height imageDesc)
 imageSize (ImageMap (RGBVectorImage imageDesc)) = (width imageDesc, height imageDesc)
 imageSize (ImageMap (RGBImage img))      = (imageWidth img, imageHeight img)
+
+-- | Convert an 'ImageElement' to a RGB value where each color component is
+-- normalized to [0:1].
+toRGB :: Floating a => ImageElement -> V3 a
+toRGB (Raw value) =
+    let value' = fromIntegral value / fromIntegral maxPixel16
+    in V3 value' value' value'
+
+toRGB (RGB (PixelRGB8 r g b)) =
+    let mv = fromIntegral maxPixel8
+        r' = fromIntegral r / mv
+        g' = fromIntegral g / mv
+        b' = fromIntegral b / mv
+    in V3 r' g' b'
+
+-- | Convert an 'ImageElement' to a RGBA value where each color component is
+-- normalized to [0:1]. If the underlying value not is on format r,g,b,a the
+-- alpha channel will be set to 1.
+toRGBA :: Floating a => ImageElement -> V4 a
+toRGBA = point . toRGB -- point converts from V3 and set w = 1.
+
+maxPixel8 :: Pixel8
+maxPixel8 = maxBound
+
+maxPixel16 :: Pixel16
+maxPixel16 = maxBound
 
 -- | Read a raw file.
 fromRawFile :: MonadIO m => (Int, Int) -> FilePath
