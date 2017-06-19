@@ -10,6 +10,7 @@ module TerrainGridTests
     , indicesFor2x2Quad
     , exportAsVertP
     , exportAsVertPNTxCFailDimensions
+    , exportAsVertPNTxC
     ) where
 
 import           Test.HUnit
@@ -136,7 +137,7 @@ indicesFor2x2Quad = do
                      , 4, 3, 6, 4, 6, 7
                      , 5, 4, 7, 5, 7, 8 ] @=? indexVector terrainGrid
 
--- | Export a terrain map as a Vert_P. Use indexing into the vertice ve
+-- | Export a terrain map as a Vert_P.
 exportAsVertP :: Assertion
 exportAsVertP = do
     let (verts, indices) = asVertP mkTerrainGrid
@@ -179,13 +180,33 @@ exportAsVertPNTxCFailDimensions = do
     let Right imageMap = fromVector (RGBVector (1, 1) $ Vector.fromList [PixelRGB8 1 1 1] )
     Left "Dimensions must match" @=? asVertPNTxC imageMap mkTerrainGrid
 
+-- | Export a terrain map as a Vert_P.
+exportAsVertPNTxC :: Assertion
+exportAsVertPNTxC = do
+    let Right (verts, indices) = asVertPNTxC mkColorMap mkTerrainGrid
+    9 @=? SVector.length verts
+    24 @=? SVector.length indices
+
 -- | Make terrain grid for export testing.
 mkTerrainGrid :: TerrainGrid
 mkTerrainGrid =
     let Right terrainGrid = fromImageMap 1 mkHeightMap
     in terrainGrid
 
--- | Make an image map representing a height map with a grid of 3, 3. On the
+-- | Make an image map representing a color map with a grid of (3, 3). There
+-- are three different color zones.
+mkColorMap :: ImageMap
+mkColorMap =
+    let Right colorMap =
+                fromVector (RGBVector (3, 3) $
+                    Vector.fromList
+                        [ PixelRGB8 1 0 0, PixelRGB8 1 0 0, PixelRGB8 0 0 1
+                        , PixelRGB8 1 0 0, PixelRGB8 0 0 1, PixelRGB8 0 1 0
+                        , PixelRGB8 0 0 1, PixelRGB8 0 1 0, PixelRGB8 0 1 0
+                        ])
+    in colorMap
+
+-- | Make an image map representing a height map with a grid of (3, 3). On the
 -- second row there's a "ridge".
 mkHeightMap :: ImageMap
 mkHeightMap =

@@ -65,6 +65,7 @@ testSuite =
         , testCase "As VertP" TerrainGridTests.exportAsVertP
         , testCase "As VertPNTxC fail on dimensions"
                    TerrainGridTests.exportAsVertPNTxCFailDimensions
+        , testCase "As VertPNTxC" TerrainGridTests.exportAsVertPNTxC
         ]
     , testGroup "Math tests - angle conversions"
         [ testCase "Conversion to radians" toRadiansConversion

@@ -33,7 +33,7 @@ import           Data.Vector                  (Vector, (!))
 import qualified Data.Vector                  as Vector
 import qualified Data.Vector.Storable         as SVector
 import           Graphics.GL                  (GLfloat, GLuint)
-import           Linear                       (V3 (..))
+import           Linear                       (V2 (..), V3 (..), V4 (..))
 import           Prelude                      hiding (lookup)
 
 -- | The terrain grid. Upper left corner of the grid is always at 0, 0. To
@@ -148,7 +148,24 @@ asVertPNTxC :: ImageMap -> TerrainGrid
             -> Either String ( StorableVector Vert_P_N_Tx_C.Vertex
                              , StorableVector GLuint
                              )
-asVertPNTxC _imageMap _terrainGrid = Left "Dimensions must match"
+asVertPNTxC imageMap terrainGrid
+    | imageSize imageMap == verticeGridSize terrainGrid =
+        let gridVector' = gridVector terrainGrid
+
+            -- First phase. Set position and default values for the other
+            -- fields.
+            verts = SVector.generate (Vector.length gridVector') $ \index ->
+                Vert_P_N_Tx_C.Vertex
+                    { Vert_P_N_Tx_C.position = gridVector' ! index
+                    , Vert_P_N_Tx_C.normal = V3 0 0 0
+                    , Vert_P_N_Tx_C.texCoord = V2 0 0
+                    , Vert_P_N_Tx_C.color = V4 0 0 0 0
+                    }
+
+            -- Make indices.
+            indices = indexVector terrainGrid
+        in Right (verts, indices)
+    | otherwise = Left "Dimensions must match"
 
 -- | Generate a 'StorableVector' of indices. Usable for creating meshes.
 indexVector :: TerrainGrid -> StorableVector GLuint
