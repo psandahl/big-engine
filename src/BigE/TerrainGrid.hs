@@ -30,9 +30,12 @@ import           BigE.ImageMap                (ImageElement (..), ImageMap,
                                                imageSize, toRGBA)
 import           BigE.Math                    (baryCentricHeight)
 import           Control.Monad.ST             (runST)
+import           Control.Monad.Primitive      (PrimMonad, PrimState)
 import           Data.Vector                  (Vector, (!))
 import qualified Data.Vector                  as Vector
 import qualified Data.Vector.Storable         as SVector
+import Data.Vector.Storable.Mutable          (MVector)
+import qualified Data.Vector.Storable.Mutable as SMVector
 import           Graphics.GL                  (GLfloat, GLuint)
 import           Linear                       (V2 (..), V3 (..))
 import           Prelude                      hiding (lookup)
@@ -171,19 +174,23 @@ asVertPNTxC imageMap terrainGrid
             -- Make indices.
             indices = indexVector terrainGrid
 
-            -- Calulate normals for smooth shading.
-            verts' = setVertPNTxCNormals verts indices
+            -- Calulate surface normals.
+            verts' = setSurfaceNormals verts indices
         in Right (verts', indices)
     | otherwise = Left "Dimensions must match"
 
 -- | Calculate smooth vertex normals.
-setVertPNTxCNormals :: StorableVector Vert_P_N_Tx_C.Vertex
-                    -> StorableVector GLuint
-                    -> StorableVector Vert_P_N_Tx_C.Vertex
-setVertPNTxCNormals verts _indices = runST $ do
-    m <- SVector.unsafeThaw verts
-    v <- SVector.unsafeFreeze m
-    return v
+setSurfaceNormals :: StorableVector Vert_P_N_Tx_C.Vertex
+                  -> StorableVector GLuint
+                  -> StorableVector Vert_P_N_Tx_C.Vertex
+setSurfaceNormals verts indices = runST $ do
+    mutableVerts <- SVector.unsafeThaw verts
+    setSurfaceNormal 0 0 indices mutableVerts
+    SVector.unsafeFreeze mutableVerts
+
+setSurfaceNormal :: PrimMonad m => Int -> Int -> StorableVector GLuint 
+                 -> MVector (PrimState m) Vert_P_N_Tx_C.Vertex -> m ()
+setSurfaceNormal _ _ _ m = SMVector.swap m 0 0
 
 -- | Generate a 'StorableVector' of indices. Usable for creating meshes.
 indexVector :: TerrainGrid -> StorableVector GLuint
