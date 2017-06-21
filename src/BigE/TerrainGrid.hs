@@ -29,6 +29,7 @@ import           BigE.ImageMap                (ImageElement (..), ImageMap,
                                                PixelRGB8 (..), elementAt,
                                                imageSize, toRGBA)
 import           BigE.Math                    (baryCentricHeight)
+import           Control.Monad.ST             (runST)
 import           Data.Vector                  (Vector, (!))
 import qualified Data.Vector                  as Vector
 import qualified Data.Vector.Storable         as SVector
@@ -169,8 +170,20 @@ asVertPNTxC imageMap terrainGrid
 
             -- Make indices.
             indices = indexVector terrainGrid
-        in Right (verts, indices)
+
+            -- Calulate normals for smooth shading.
+            verts' = setVertPNTxCNormals verts indices
+        in Right (verts', indices)
     | otherwise = Left "Dimensions must match"
+
+-- | Calculate smooth vertex normals.
+setVertPNTxCNormals :: StorableVector Vert_P_N_Tx_C.Vertex
+                    -> StorableVector GLuint
+                    -> StorableVector Vert_P_N_Tx_C.Vertex
+setVertPNTxCNormals verts _indices = runST $ do
+    m <- SVector.unsafeThaw verts
+    v <- SVector.unsafeFreeze m
+    return v
 
 -- | Generate a 'StorableVector' of indices. Usable for creating meshes.
 indexVector :: TerrainGrid -> StorableVector GLuint
