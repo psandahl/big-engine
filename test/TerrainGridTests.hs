@@ -27,7 +27,7 @@ import           BigE.TerrainGrid             (TerrainGrid, asVertP,
                                                verticeGridSize)
 import qualified Data.Vector                  as Vector
 import qualified Data.Vector.Storable         as SVector
-import           Linear                       (V2 (..), V3 (..), V4 (..))
+import           Linear                       (V2 (..), V3 (..), V4 (..), normalize)
 import           Prelude                      hiding (lookup)
 
 -- | An input ImageMap must be at least 2, 2 big. In this test case
@@ -189,60 +189,69 @@ exportAsVertPNTxC = do
     9 @=? SVector.length verts
     24 @=? SVector.length indices
 
-    -- Row 1.
+    -- The expected normals for the smoothed normals.
+    let forward = normalize $ V3 0 1 (-1)
+        backward = normalize $ V3 0 1 1
+
+    -- Row 1. Normals pointing 45 degrees forward.
     let v0 = SVector.unsafeIndex verts 0
     V3 0 0 0 @=? Vert_P_N_Tx_C.position v0
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v0
+    forward `equalToVec` Vert_P_N_Tx_C.normal v0
     V2 0 2 @=? Vert_P_N_Tx_C.texCoord v0
     V4 1 0 0 1 @=? Vert_P_N_Tx_C.color v0
 
     let v1 = SVector.unsafeIndex verts 1
     V3 1 0 0 @=? Vert_P_N_Tx_C.position v1
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v1
+    forward `equalToVec` Vert_P_N_Tx_C.normal v1
     V2 1 2 @=? Vert_P_N_Tx_C.texCoord v1
     V4 1 0 0 1 @=? Vert_P_N_Tx_C.color v1
 
     let v2 = SVector.unsafeIndex verts 2
     V3 2 0 0 @=? Vert_P_N_Tx_C.position v2
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v2
+    forward `equalToVec` Vert_P_N_Tx_C.normal v2
     V2 2 2 @=? Vert_P_N_Tx_C.texCoord v2
     V4 0 0 1 1 @=? Vert_P_N_Tx_C.color v2
 
-    -- Row 2.
+    -- Row 2. The normals are a little more complicated as they are
+    -- averaged from several surfaces. And as the model look like only the
+    -- middle point/normal is completely balanced with regards to the same
+    -- number of surfaces.
     let v3 = SVector.unsafeIndex verts 3
     V3 0 1 1 @=? Vert_P_N_Tx_C.position v3
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v3
+    let slightlyForward = normalize $ forward + forward + backward
+    slightlyForward `equalToVec` Vert_P_N_Tx_C.normal v3
     V2 0 1 @=? Vert_P_N_Tx_C.texCoord v3
     V4 1 0 0 1 @=? Vert_P_N_Tx_C.color v3
 
     let v4 = SVector.unsafeIndex verts 4
     V3 1 1 1 @=? Vert_P_N_Tx_C.position v4
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v4
+    V3 0 1 0 `equalToVec` Vert_P_N_Tx_C.normal v4
     V2 1 1 @=? Vert_P_N_Tx_C.texCoord v4
     V4 0 0 1 1 @=? Vert_P_N_Tx_C.color v4
 
     let v5 = SVector.unsafeIndex verts 5
     V3 2 1 1 @=? Vert_P_N_Tx_C.position v5
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v5
+    let slightlyBackward = normalize $ forward + backward + backward
+    slightlyBackward `equalToVec` Vert_P_N_Tx_C.normal v5
     V2 2 1 @=? Vert_P_N_Tx_C.texCoord v5
     V4 0 1 0 1 @=? Vert_P_N_Tx_C.color v5
 
-    -- Row 3.
+    -- Row 3. Normals pointing 45 degrees  backward.
     let v6 = SVector.unsafeIndex verts 6
     V3 0 0 2 @=? Vert_P_N_Tx_C.position v6
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v6
+    backward `equalToVec` Vert_P_N_Tx_C.normal v6
     V2 0 0 @=? Vert_P_N_Tx_C.texCoord v6
     V4 0 0 1 1 @=? Vert_P_N_Tx_C.color v6
 
     let v7 = SVector.unsafeIndex verts 7
     V3 1 0 2 @=? Vert_P_N_Tx_C.position v7
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v7
+    backward `equalToVec` Vert_P_N_Tx_C.normal v7
     V2 1 0 @=? Vert_P_N_Tx_C.texCoord v7
     V4 0 1 0 1 @=? Vert_P_N_Tx_C.color v7
 
     let v8 = SVector.unsafeIndex verts 8
     V3 2 0 2 @=? Vert_P_N_Tx_C.position v8
-    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v8
+    backward `equalToVec` Vert_P_N_Tx_C.normal v8
     V2 2 0 @=? Vert_P_N_Tx_C.texCoord v8
     V4 0 1 0 1 @=? Vert_P_N_Tx_C.color v8
 
@@ -277,8 +286,14 @@ mkHeightMap =
                                     ])
     in heightMap
 
-equalTo :: Float -> Float -> Assertion
+equalToVec :: (Floating a, Ord a, Show a) => V3 a -> V3 a -> Assertion
+equalToVec (V3 x1 y1 z1) (V3 x2 y2 z2) = do
+    x1 `equalTo` x2
+    y1 `equalTo` y2
+    z1 `equalTo` z2
+
+equalTo :: (Floating a, Ord a, Show a) => a -> a -> Assertion
 equalTo = assertApproxEqual "Shall be equal" closeEnough
 
-closeEnough :: Float
+closeEnough :: Floating a => a
 closeEnough = 0.00001

@@ -28,7 +28,7 @@ import qualified BigE.Attribute.Vert_P_N_Tx_C as Vert_P_N_Tx_C
 import           BigE.ImageMap                (ImageElement (..), ImageMap,
                                                PixelRGB8 (..), elementAt,
                                                imageSize, toRGBA)
-import           BigE.Math                    (baryCentricHeight)
+import           BigE.Math                    (baryCentricHeight, surfaceNormal)
 import           Control.Monad.ST             (runST)
 import           Control.Monad.Primitive      (PrimMonad, PrimState)
 import           Data.Vector                  (Vector, (!))
@@ -191,12 +191,40 @@ setVertexNormals :: StorableVector Vert_P_N_Tx_C.Vertex
                   -> StorableVector Vert_P_N_Tx_C.Vertex
 setVertexNormals verts indices = runST $ do
     mutableVerts <- SVector.unsafeThaw verts
-    setSurfaceNormal 0 0 indices mutableVerts
+    setSurfaceNormal 0 (SVector.length indices) indices mutableVerts
     SVector.unsafeFreeze mutableVerts
 
+-- | Iterate through the mutable array, calculate the surface normal and
+-- add the surface normal to the vertices for the surface of each triangle. The
+-- triangle's vertices are accessed through the index array.
+-- It will result in a smoothed normal from all surfaces sharing a vertex.
 setSurfaceNormal :: PrimMonad m => Int -> Int -> StorableVector GLuint
                  -> MVector (PrimState m) Vert_P_N_Tx_C.Vertex -> m ()
-setSurfaceNormal _ _ _ m = SMVector.swap m 0 0
+setSurfaceNormal metaIndex numIndices indices vec
+    | metaIndex < numIndices = do
+        let i0 = fromIntegral $ SVector.unsafeIndex indices metaIndex
+            i1 = fromIntegral $ SVector.unsafeIndex indices (metaIndex + 1)
+            i2 = fromIntegral $ SVector.unsafeIndex indices (metaIndex + 2)
+
+        v0 <- SMVector.read vec i0
+        v1 <- SMVector.read vec i1
+        v2 <- SMVector.read vec i2
+
+        -- Calculate the normal for the surface.
+        let norm = surfaceNormal (Vert_P_N_Tx_C.position v0)
+                                 (Vert_P_N_Tx_C.position v1)
+                                 (Vert_P_N_Tx_C.position v2)
+
+        -- Update the vertices.
+        SMVector.write vec i0 $ v0 { Vert_P_N_Tx_C.normal = Vert_P_N_Tx_C.normal v0 + norm }
+        SMVector.write vec i1 $ v1 { Vert_P_N_Tx_C.normal = Vert_P_N_Tx_C.normal v1 + norm }
+        SMVector.write vec i2 $ v2 { Vert_P_N_Tx_C.normal = Vert_P_N_Tx_C.normal v2 + norm }
+
+        -- Iterate to the meta index for the next triangle.
+        setSurfaceNormal (metaIndex + 3) numIndices indices vec
+
+    -- The interation is done.
+    | otherwise = return ()
 
 -- | Generate a 'StorableVector' of indices. Usable for creating meshes.
 indexVector :: TerrainGrid -> StorableVector GLuint
