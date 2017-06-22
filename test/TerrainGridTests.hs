@@ -192,48 +192,57 @@ exportAsVertPNTxC = do
     -- Row 1.
     let v0 = SVector.unsafeIndex verts 0
     V3 0 0 0 @=? Vert_P_N_Tx_C.position v0
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v0
     V2 0 2 @=? Vert_P_N_Tx_C.texCoord v0
     V4 1 0 0 1 @=? Vert_P_N_Tx_C.color v0
 
     let v1 = SVector.unsafeIndex verts 1
     V3 1 0 0 @=? Vert_P_N_Tx_C.position v1
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v1
     V2 1 2 @=? Vert_P_N_Tx_C.texCoord v1
     V4 1 0 0 1 @=? Vert_P_N_Tx_C.color v1
 
     let v2 = SVector.unsafeIndex verts 2
     V3 2 0 0 @=? Vert_P_N_Tx_C.position v2
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v2
     V2 2 2 @=? Vert_P_N_Tx_C.texCoord v2
     V4 0 0 1 1 @=? Vert_P_N_Tx_C.color v2
 
     -- Row 2.
     let v3 = SVector.unsafeIndex verts 3
     V3 0 1 1 @=? Vert_P_N_Tx_C.position v3
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v3
     V2 0 1 @=? Vert_P_N_Tx_C.texCoord v3
     V4 1 0 0 1 @=? Vert_P_N_Tx_C.color v3
 
     let v4 = SVector.unsafeIndex verts 4
     V3 1 1 1 @=? Vert_P_N_Tx_C.position v4
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v4
     V2 1 1 @=? Vert_P_N_Tx_C.texCoord v4
     V4 0 0 1 1 @=? Vert_P_N_Tx_C.color v4
 
     let v5 = SVector.unsafeIndex verts 5
     V3 2 1 1 @=? Vert_P_N_Tx_C.position v5
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v5
     V2 2 1 @=? Vert_P_N_Tx_C.texCoord v5
     V4 0 1 0 1 @=? Vert_P_N_Tx_C.color v5
 
     -- Row 3.
     let v6 = SVector.unsafeIndex verts 6
     V3 0 0 2 @=? Vert_P_N_Tx_C.position v6
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v6
     V2 0 0 @=? Vert_P_N_Tx_C.texCoord v6
     V4 0 0 1 1 @=? Vert_P_N_Tx_C.color v6
 
     let v7 = SVector.unsafeIndex verts 7
     V3 1 0 2 @=? Vert_P_N_Tx_C.position v7
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v7
     V2 1 0 @=? Vert_P_N_Tx_C.texCoord v7
     V4 0 1 0 1 @=? Vert_P_N_Tx_C.color v7
 
     let v8 = SVector.unsafeIndex verts 8
     V3 2 0 2 @=? Vert_P_N_Tx_C.position v8
+    V3 0 0 0 @=? Vert_P_N_Tx_C.normal v8
     V2 2 0 @=? Vert_P_N_Tx_C.texCoord v8
     V4 0 1 0 1 @=? Vert_P_N_Tx_C.color v8
 
