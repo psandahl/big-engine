@@ -52,7 +52,7 @@ aspectRatio (width, height) = fromIntegral width / fromIntegral height
 -- view from 0.001 to 1000.
 mkPerspective :: Floating a => (Int, Int) -> M44 a
 mkPerspective dimensions =
-    perspective (toRadians 45) (aspectRatio dimensions) 0.001 1000
+    perspective (toRadians 45) (aspectRatio dimensions) 0.001 10000
 
 -- | Utility function to setup a translation matrix.
 mkTranslate :: Floating a => V3 a -> M44 a

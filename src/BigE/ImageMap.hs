@@ -31,7 +31,7 @@ import           Codec.Picture              (Image (..), Pixel16, Pixel8,
                                              pixelAt, readImage)
 import           Control.Exception          (SomeException, try)
 import           Control.Monad.IO.Class     (MonadIO, liftIO)
-import           Data.Binary.Get            (Get, getWord16be, runGet)
+import           Data.Binary.Get            (Get, getWord16le, runGet)
 import           Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as ByteString
 import           Data.Vector                (Vector, (!))
@@ -181,4 +181,4 @@ toVector bs =
     in runGet (buildVector pxl16Items) bs
     where
         buildVector :: Int -> Get (Vector Pixel16)
-        buildVector num = Vector.replicateM num getWord16be
+        buildVector num = Vector.replicateM num getWord16le
