@@ -17,10 +17,11 @@ module BigE.Math
     , mkScale
     , mkRotateTranslate
     , mkRotate
+    , mkRotate33
     , surfaceNormal
     ) where
 
-import           Linear (Epsilon, M44, V3 (..), V4 (..), axisAngle, cross,
+import           Linear (Epsilon, M33, M44, V3 (..), V4 (..), axisAngle, cross,
                          mkTransformation, normalize, perspective, zero)
 
 -- | Convert degrees to radians.
@@ -78,6 +79,19 @@ mkRotateTranslate axis theta = mkTransformation (axisAngle axis theta)
 -- | Utility function to setup a rotation matrix.
 mkRotate :: (Epsilon a, Floating a) => V3 a -> a -> M44 a
 mkRotate axis theta = mkRotateTranslate axis theta zero
+
+-- | Utility function to setup a M33 rotation matrix.
+mkRotate33 :: (Epsilon a, Floating a) => V3 a -> a -> M33 a
+mkRotate33 axis = toM33 . mkRotate axis
+    where
+        toM33 :: M44 a -> M33 a
+        toM33 (V4 (V4 x1 y1 z1 _)
+                  (V4 x2 y2 z2 _)
+                  (V4 x3 y3 z3 _)
+                  _) =
+            V3 (V3 x1 y1 z1)
+               (V3 x2 y2 z2)
+               (V3 x3 y3 z3)
 
 -- | The normal of the surface given by the vertices' triangle. The assumption
 -- is that the triangle's vertices are given in the same order as the triangle
