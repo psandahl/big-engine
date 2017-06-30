@@ -6,6 +6,7 @@ import           Test.Framework.Providers.HUnit (testCase)
 import           FontParserTests
 import qualified ImageMapTests
 import           MathTests
+import           ModelTests
 import           PickIdTests
 import qualified TerrainGridTests
 import           UtilTests
@@ -82,6 +83,10 @@ testSuite =
         [ testCase "Calculate surface normals for front facing" frontFacingNormals
         , testCase "Calculate surface normals for 90 deg away facing triangles"
                    differentFacingNormals
+        ]
+    , testGroup "Model tests - Wavefront file parsing"
+        [ testCase "Parse vertex FileParts" vertexFileParts
+        , testCase "Parse normal FileParts" normalFileParts
         ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo

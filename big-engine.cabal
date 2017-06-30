@@ -19,6 +19,7 @@ test-suite big-engine-test
   main-is:             Spec.hs
   other-modules:       ImageMapTests
                        MathTests
+                       ModelTests
                        PickIdTests
                        FontParserTests
                        TerrainGridTests

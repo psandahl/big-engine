@@ -27,7 +27,8 @@ import           BigE.TerrainGrid             (TerrainGrid, asVertP,
                                                verticeGridSize)
 import qualified Data.Vector                  as Vector
 import qualified Data.Vector.Storable         as SVector
-import           Linear                       (V2 (..), V3 (..), V4 (..), normalize)
+import           Linear                       (V2 (..), V3 (..), V4 (..),
+                                               normalize)
 import           Prelude                      hiding (lookup)
 
 -- | An input ImageMap must be at least 2, 2 big. In this test case
