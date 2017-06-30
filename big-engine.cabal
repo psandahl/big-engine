@@ -55,6 +55,8 @@ library
                        BigE.ImageMap
                        BigE.Math
                        BigE.Mesh
+                       BigE.Model
+                       BigE.Model.Parser
                        BigE.MousePicker
                        BigE.Runtime
                        BigE.Program
@@ -79,6 +81,7 @@ library
                      , mtl
                      , OpenGLRaw
                      , primitive
+                     , scientific
                      , unordered-containers
                      , vector
   default-language:    Haskell2010
