@@ -10,11 +10,15 @@
 module BigE.Model.Parser
     ( FilePart (..)
     , Point (..)
+    , fromFile
     , parser
     ) where
 
 import           Control.Applicative             (empty)
+import           Control.Exception               (IOException, catch)
 import           Control.Monad                   (void)
+import           Control.Monad.IO.Class          (MonadIO, liftIO)
+import qualified Data.ByteString.Lazy.Char8      as LBS
 import           Data.Scientific                 (toRealFloat)
 import           Graphics.GL                     (GLfloat)
 import           Linear                          (V2 (..), V3 (..))
@@ -38,9 +42,26 @@ data FilePart
 data Point = Point !Int !(Maybe Int) !(Maybe Int)
     deriving (Eq, Show)
 
+--  Read a Wavefront object from the specified file.
+fromFile :: MonadIO m => FilePath -> m (Either String [FilePart])
+fromFile = liftIO . fromFileUnlifted
+
+fromFileUnlifted :: FilePath -> IO (Either String [FilePart])
+fromFileUnlifted file = parseIt `catch` handler
+    where
+        parseIt :: IO (Either String [FilePart])
+        parseIt = do
+            content <- LBS.readFile file
+            case runParser parser file content of
+                Right parts -> return $ Right parts
+                Left err    -> return $ Left (show err)
+
+        handler :: IOException -> IO (Either String [FilePart])
+        handler = return . Left . show
+
 -- | Parse content from the 'Parser's content stream.
 parser :: Parser [FilePart]
-parser = manyTill (lexeme filePart) eof
+parser = manyTill (sc *> filePart) eof
 
 filePart :: Parser FilePart
 filePart = try vertex
