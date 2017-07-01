@@ -87,6 +87,7 @@ testSuite =
     , testGroup "Model tests - Wavefront file parsing"
         [ testCase "Parse vertex FileParts" vertexFileParts
         , testCase "Parse normal FileParts" normalFileParts
+        , testCase "Parse texCoord FileParts" texCoordFileParts
         ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo

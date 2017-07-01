@@ -16,7 +16,7 @@ import           Control.Applicative             (empty)
 import           Control.Monad                   (void)
 import           Data.Scientific                 (toRealFloat)
 import           Graphics.GL                     (GLfloat)
-import           Linear                          (V3 (..))
+import           Linear                          (V2 (..), V3 (..))
 import           Text.Megaparsec
 import           Text.Megaparsec.ByteString.Lazy (Parser)
 import qualified Text.Megaparsec.Lexer           as Lexer
@@ -25,6 +25,7 @@ import qualified Text.Megaparsec.Lexer           as Lexer
 data FilePart
     = Vertex !(V3 GLfloat)
     | Normal !(V3 GLfloat)
+    | TexCoord !(V2 GLfloat)
     deriving (Eq, Show)
 
 -- | Parse content from the 'Parser's content stream.
@@ -34,6 +35,7 @@ parser = manyTill (lexeme filePart) eof
 filePart :: Parser FilePart
 filePart = try vertex
        <|> try normal
+       <|> try texCoord
 
 -- | Parse one vertex specification.
 vertex :: Parser FilePart
@@ -42,6 +44,14 @@ vertex = kwV *> (Vertex <$> v3)
 -- | Parse one vertex normal specification.
 normal :: Parser FilePart
 normal = kwVN *> (Normal <$> v3)
+
+-- | Parse one texture coordinate specification.
+texCoord :: Parser FilePart
+texCoord = kwVT *> (TexCoord <$> v2)
+
+-- | Parse one V2.
+v2 :: Parser (V2 GLfloat)
+v2 = V2 <$> lexeme glFloat <*> lexeme glFloat
 
 -- | Parse one V3.
 v3 :: Parser (V3 GLfloat)
@@ -58,6 +68,11 @@ kwV = void $ Lexer.symbol sc "v"
 -- | Keyword "vn". Initiates a vertex normal specification.
 kwVN :: Parser ()
 kwVN = void $ Lexer.symbol sc "vn"
+
+-- | Keyword "vt". Initiates a texture coordinate specification.
+kwVT :: Parser ()
+kwVT = void $ Lexer.symbol sc "vt"
+
 -- | Space consumer; white space or comments starting with #.
 sc :: Parser ()
 sc = Lexer.space (void spaceChar) (Lexer.skipLineComment "#") empty
