@@ -88,6 +88,9 @@ testSuite =
         [ testCase "Parse vertex FileParts" vertexFileParts
         , testCase "Parse normal FileParts" normalFileParts
         , testCase "Parse texCoord FileParts" texCoordFileParts
+        , testCase "Parse vertex only faces" vertexOnlyFaceFileParts
+        , testCase "Parse vertex//normal faces" vertexNormalFaceFileParts
+        , testCase "Parse vertex/tex/normal faces" completeFaceFileParts
         ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo

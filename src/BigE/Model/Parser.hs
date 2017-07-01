@@ -9,6 +9,7 @@
 -- Parse a Wavefront object file. Only a subset of the file format is supported.
 module BigE.Model.Parser
     ( FilePart (..)
+    , Point (..)
     , parser
     ) where
 
@@ -26,6 +27,15 @@ data FilePart
     = Vertex !(V3 GLfloat)
     | Normal !(V3 GLfloat)
     | TexCoord !(V2 GLfloat)
+    | Triangle !Point !Point !Point
+    deriving (Eq, Show)
+
+-- | A point in a triangle face, where all the components are describing an
+-- index:
+-- First component is vertex index. It is mandatory.
+-- Second component is texture coordinate index.
+-- Third component is normal index.
+data Point = Point !Int !(Maybe Int) !(Maybe Int)
     deriving (Eq, Show)
 
 -- | Parse content from the 'Parser's content stream.
@@ -36,6 +46,7 @@ filePart :: Parser FilePart
 filePart = try vertex
        <|> try normal
        <|> try texCoord
+       <|> try triangle
 
 -- | Parse one vertex specification.
 vertex :: Parser FilePart
@@ -49,6 +60,16 @@ normal = kwVN *> (Normal <$> v3)
 texCoord :: Parser FilePart
 texCoord = kwVT *> (TexCoord <$> v2)
 
+-- | Parse one triangle face.
+triangle :: Parser FilePart
+triangle = kwF *> (Triangle <$> lexeme point <*> lexeme point <*> lexeme point)
+
+-- | Parse one point.
+point :: Parser Point
+point = Point <$> int
+              <*> (char '/' *> optional int)
+              <*> (char '/' *> optional int)
+
 -- | Parse one V2.
 v2 :: Parser (V2 GLfloat)
 v2 = V2 <$> lexeme glFloat <*> lexeme glFloat
@@ -61,6 +82,10 @@ v3 = V3 <$> lexeme glFloat <*> lexeme glFloat <*> lexeme glFloat
 glFloat :: Parser GLfloat
 glFloat = toRealFloat <$> Lexer.signed sc Lexer.scientific
 
+-- | Parse one Int.
+int :: Parser Int
+int = fromIntegral <$> Lexer.signed sc Lexer.integer
+
 -- | Keyword "v". Initiates a vertex specification.
 kwV :: Parser ()
 kwV = void $ Lexer.symbol sc "v"
@@ -72,6 +97,10 @@ kwVN = void $ Lexer.symbol sc "vn"
 -- | Keyword "vt". Initiates a texture coordinate specification.
 kwVT :: Parser ()
 kwVT = void $ Lexer.symbol sc "vt"
+
+-- | Keyword "f". Initiates a face (triangle) specification.
+kwF :: Parser ()
+kwF = void $ Lexer.symbol sc "f"
 
 -- | Space consumer; white space or comments starting with #.
 sc :: Parser ()
