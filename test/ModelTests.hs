@@ -7,11 +7,13 @@ module ModelTests
     , vertexNormalFaceFileParts
     , completeFaceFileParts
     , completeModel
+    , splittedFileParts
     ) where
 
 import           Test.HUnit
 
-import           BigE.Model.Parser          (FilePart (..), Point (..), parser)
+import           BigE.Model.Parser          (FilePart (..), Point (..), parser,
+                                             splitParts)
 import           Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as LBS
 import           Linear                     (V2 (..), V3 (..))
@@ -94,6 +96,16 @@ completeFaceFileParts = do
                    (Point 5 (Just 6) (Just 7))
                    (Point 6 (Just 7) (Just 8))
         ] @=? parts2
+
+-- | Split the list of file parts into a tuple of components.
+splittedFileParts :: Assertion
+splittedFileParts = do
+    let (verts, normals, texCoords, triangles) = splitParts modelParts
+    [ Vertex $ V3 1 1 1, Vertex $ V3 (-1) 0 (-1) ] @=? verts
+    [ Normal $ V3 1 0 0, Normal $ V3 0.7 0.7 0 ] @=? normals
+    [ TexCoord $ V2 0 1, TexCoord $ V2 1 0 ] @=? texCoords
+    [ Triangle (Point 1 (Just 2) (Just 3)) (Point 2 (Just 3) (Just 4)) (Point 3 (Just 4) (Just 5))
+     , Triangle (Point 4 (Just 5) (Just 6)) (Point 5 (Just 6) (Just 7)) (Point 6 (Just 7) (Just 8))] @=? triangles
 
 -- | Test parsing of a complete model.
 completeModel :: Assertion

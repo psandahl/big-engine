@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric #-}
 -- |
 -- Module: BigE.Model.Parser
 -- Copyright: (c) 2017 Patrik Sandahl
@@ -10,6 +11,7 @@
 module BigE.Model.Parser
     ( FilePart (..)
     , Point (..)
+    , splitParts
     , fromFile
     , parser
     ) where
@@ -19,7 +21,9 @@ import           Control.Exception               (IOException, catch)
 import           Control.Monad                   (void)
 import           Control.Monad.IO.Class          (MonadIO, liftIO)
 import qualified Data.ByteString.Lazy.Char8      as LBS
+import           Data.Hashable
 import           Data.Scientific                 (toRealFloat)
+import           GHC.Generics                    (Generic)
 import           Graphics.GL                     (GLfloat)
 import           Linear                          (V2 (..), V3 (..))
 import           Text.Megaparsec
@@ -43,7 +47,32 @@ data FilePart
 -- Second component is texture coordinate index.
 -- Third component is normal index.
 data Point = Point !Int !(Maybe Int) !(Maybe Int)
-    deriving (Eq, Show)
+    deriving (Eq, Generic, Show)
+
+-- | Point must be hashable.
+instance Hashable Point
+
+-- | Split the file parts into: vertices, normals, texture coordinates and
+-- triangles.
+splitParts :: [FilePart] -> ([FilePart], [FilePart], [FilePart], [FilePart])
+splitParts parts = go parts ([], [], [], [])
+    where
+        go :: [FilePart]
+           -> ([FilePart], [FilePart], [FilePart], [FilePart])
+           -> ([FilePart], [FilePart], [FilePart], [FilePart])
+
+        -- Input list is empty. Reverse all components to get back original
+        -- order.
+        go [] (verts, normals, texCoords, triangles) =
+            (reverse verts, reverse normals, reverse texCoords, reverse triangles)
+
+        go (x:xs) tuple@(verts, normals, texCoords, triangles) =
+            case x of
+                Vertex _    -> go xs (x:verts, normals, texCoords, triangles)
+                Normal _    -> go xs (verts, x:normals, texCoords, triangles)
+                TexCoord _  -> go xs (verts, normals, x:texCoords, triangles)
+                Triangle {} -> go xs (verts, normals, texCoords, x:triangles)
+                _           -> go xs tuple
 
 --  Read a Wavefront object from the specified file.
 fromFile :: MonadIO m => FilePath -> m (Either String [FilePart])

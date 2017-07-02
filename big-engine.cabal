@@ -67,6 +67,7 @@ library
                        BigE.Types
                        BigE.Util
   other-modules:       BigE.Internal.GLResources
+                       BigE.Model.IndexAllocator
                        BigE.Runtime.Configuration
                        BigE.Runtime.Callback
                        BigE.Runtime.Display
@@ -76,6 +77,7 @@ library
                      , bytestring
                      , filepath
                      , GLFW-b
+                     , hashable
                      , JuicyPixels
                      , linear
                      , megaparsec

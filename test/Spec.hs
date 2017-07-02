@@ -92,6 +92,7 @@ testSuite =
         , testCase "Parse vertex//normal faces" vertexNormalFaceFileParts
         , testCase "Parse vertex/tex/normal faces" completeFaceFileParts
         , testCase "Parse a complete model" completeModel
+        , testCase "Split a FilePart list" splittedFileParts
         ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo
