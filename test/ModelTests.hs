@@ -6,13 +6,16 @@ module ModelTests
     , vertexOnlyFaceFileParts
     , vertexNormalFaceFileParts
     , completeFaceFileParts
+    , completeModel
     ) where
 
 import           Test.HUnit
 
-import           BigE.Model.Parser (FilePart (..), Point (..), parser)
-import           Linear            (V2 (..), V3 (..))
-import           Text.Megaparsec   (runParser)
+import           BigE.Model.Parser          (FilePart (..), Point (..), parser)
+import           Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as LBS
+import           Linear                     (V2 (..), V3 (..))
+import           Text.Megaparsec            (runParser)
 
 -- | Test parsing of vertex 'FilePart's only.
 vertexFileParts :: Assertion
@@ -91,3 +94,48 @@ completeFaceFileParts = do
                    (Point 5 (Just 6) (Just 7))
                    (Point 6 (Just 7) (Just 8))
         ] @=? parts2
+
+-- | Test parsing of a complete model.
+completeModel :: Assertion
+completeModel =
+    Right modelParts @=? runParser parser "test" model
+
+-- | Dummy model. Makes no sense geometerically.
+model :: ByteString
+model = LBS.pack $ unlines
+    [ "# Test model"
+    , "mtllib test.mtl"
+    , "# Vertices"
+    , "v 1.0 1.0 1.0"
+    , "v -1.0 0.0 -1.0"
+    , "# Texture coordinates"
+    , "vt 0.0 1.0"
+    , "vt 1.0 0.0"
+    , "# Normals"
+    , "vn 1.0 0.0 0.0"
+    , "vn 0.7 0.7 0.0"
+    , "usemtl test.png"
+    , "s off"
+    , "# Faces"
+    , "f 1/2/3 2/3/4 3/4/5"
+    , "f 4/5/6 5/6/7 6/7/8"
+    ]
+
+modelParts :: [FilePart]
+modelParts =
+    [ Mtllib "test.mtl"
+    , Vertex $ V3 1 1 1
+    , Vertex $ V3 (-1) 0 (-1)
+    , TexCoord $ V2 0 1
+    , TexCoord $ V2 1 0
+    , Normal $ V3 1 0 0
+    , Normal $ V3 0.7 0.7 0
+    , Usemtl "test.png"
+    , Smooth "off"
+    , Triangle (Point 1 (Just 2) (Just 3))
+               (Point 2 (Just 3) (Just 4))
+               (Point 3 (Just 4) (Just 5))
+    , Triangle (Point 4 (Just 5) (Just 6))
+               (Point 5 (Just 6) (Just 7))
+               (Point 6 (Just 7) (Just 8))
+    ]

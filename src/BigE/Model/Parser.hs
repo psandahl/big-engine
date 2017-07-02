@@ -32,6 +32,9 @@ data FilePart
     | Normal !(V3 GLfloat)
     | TexCoord !(V2 GLfloat)
     | Triangle !Point !Point !Point
+    | Smooth !String
+    | Mtllib !String
+    | Usemtl !String
     deriving (Eq, Show)
 
 -- | A point in a triangle face, where all the components are describing an
@@ -68,6 +71,9 @@ filePart = try vertex
        <|> try normal
        <|> try texCoord
        <|> try triangle
+       <|> try smoothDecl
+       <|> try mtllibDecl
+       <|> try usemtlDecl
 
 -- | Parse one vertex specification.
 vertex :: Parser FilePart
@@ -84,6 +90,18 @@ texCoord = kwVT *> (TexCoord <$> v2)
 -- | Parse one triangle face.
 triangle :: Parser FilePart
 triangle = kwF *> (Triangle <$> lexeme point <*> lexeme point <*> lexeme point)
+
+-- | Smooth group. Not used.
+smoothDecl :: Parser FilePart
+smoothDecl = kwS *> (Smooth <$> lexeme grabString)
+
+-- | Material declaration. Not used.
+mtllibDecl :: Parser FilePart
+mtllibDecl = kwMtllib *> (Mtllib <$> lexeme grabString)
+
+-- | Material usage declaration. Not used.
+usemtlDecl :: Parser FilePart
+usemtlDecl = kwUsemtl *> (Usemtl <$> lexeme grabString)
 
 -- | Parse one point.
 point :: Parser Point
@@ -109,23 +127,42 @@ int = fromIntegral <$> Lexer.signed sc Lexer.integer
 
 -- | Keyword "v". Initiates a vertex specification.
 kwV :: Parser ()
-kwV = void $ Lexer.symbol sc "v"
+kwV = keyword "v"
 
 -- | Keyword "vn". Initiates a vertex normal specification.
 kwVN :: Parser ()
-kwVN = void $ Lexer.symbol sc "vn"
+kwVN = keyword "vn"
 
 -- | Keyword "vt". Initiates a texture coordinate specification.
 kwVT :: Parser ()
-kwVT = void $ Lexer.symbol sc "vt"
+kwVT = keyword "vt"
 
 -- | Keyword "f". Initiates a face (triangle) specification.
 kwF :: Parser ()
-kwF = void $ Lexer.symbol sc "f"
+kwF = keyword "f"
+
+-- | Keyword "s".
+kwS :: Parser ()
+kwS = keyword "s"
+
+-- | Keyword "mtllib".
+kwMtllib :: Parser ()
+kwMtllib = keyword "mtllib"
+
+-- | Keyword "usemtl".
+kwUsemtl :: Parser ()
+kwUsemtl = keyword "usemtl"
+
+keyword :: String -> Parser ()
+keyword = void . Lexer.symbol sc
 
 -- | Space consumer; white space or comments starting with #.
 sc :: Parser ()
 sc = Lexer.space (void spaceChar) (Lexer.skipLineComment "#") empty
+
+-- | Grab ascii until next space char.
+grabString :: Parser String
+grabString = manyTill asciiChar spaceChar
 
 -- | Lexeme; a parser prepended by the space comsumer.
 lexeme :: Parser a -> Parser a
