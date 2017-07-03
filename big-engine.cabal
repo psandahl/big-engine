@@ -57,6 +57,7 @@ library
                        BigE.Math
                        BigE.Mesh
                        BigE.Model
+                       BigE.Model.Assembler
                        BigE.Model.Parser
                        BigE.MousePicker
                        BigE.Runtime

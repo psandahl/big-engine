@@ -8,10 +8,13 @@ module ModelTests
     , completeFaceFileParts
     , completeModel
     , splittedFileParts
+    , assembleVertP
     ) where
 
 import           Test.HUnit
 
+import qualified BigE.Attribute.Vert_P      as Vert_P
+import qualified BigE.Model.Assembler       as Assembler
 import           BigE.Model.Parser          (FilePart (..), Point (..), parser,
                                              splitParts)
 import           Data.ByteString.Lazy.Char8 (ByteString)
@@ -112,6 +115,16 @@ completeModel :: Assertion
 completeModel =
     Right modelParts @=? runParser parser "test" model
 
+-- | Test assembly of a simple model to vert_Ps.
+assembleVertP :: Assertion
+assembleVertP =
+    Just ([ Vert_P.Vertex { Vert_P.position = V3 1 1 0}
+          , Vert_P.Vertex { Vert_P.position = V3 (-1) 1 0 }
+          , Vert_P.Vertex { Vert_P.position = V3 (-1) (-1) 0 }
+          , Vert_P.Vertex { Vert_P.position = V3 1 (-1) 0 }
+          ], [0, 1, 2, 0, 2, 3])
+        @=? Assembler.assembleVertP squareParts
+
 -- | Dummy model. Makes no sense geometerically.
 model :: ByteString
 model = LBS.pack $ unlines
@@ -133,6 +146,7 @@ model = LBS.pack $ unlines
     , "f 4/5/6 5/6/7 6/7/8"
     ]
 
+-- | The file parts that should be the result of the above model.
 modelParts :: [FilePart]
 modelParts =
     [ Mtllib "test.mtl"
@@ -150,4 +164,19 @@ modelParts =
     , Triangle (Point 4 (Just 5) (Just 6))
                (Point 5 (Just 6) (Just 7))
                (Point 6 (Just 7) (Just 8))
+    ]
+
+-- | Simple model which shall result in a square.
+squareParts :: [FilePart]
+squareParts =
+    [ Vertex $ V3 1 1 0
+    , Vertex $ V3 (-1) 1 0
+    , Vertex $ V3 (-1) (-1) 0
+    , Vertex $ V3 1 (-1) 0
+    , Triangle (Point 1 Nothing Nothing)
+               (Point 2 Nothing Nothing)
+               (Point 3 Nothing Nothing)
+    , Triangle (Point 1 Nothing Nothing)
+               (Point 3 Nothing Nothing)
+               (Point 4 Nothing Nothing)
     ]

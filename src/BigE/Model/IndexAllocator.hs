@@ -27,7 +27,7 @@ data IndexAllocator = IndexAllocator
 -- | Allocation reply.
 data AllocReply
     = Index !GLuint !IndexAllocator
-    | AlreadyIndexed !GLuint !IndexAllocator
+    | AlreadyIndexed !GLuint
     deriving Show
 
 -- | Get a new allocator.
@@ -42,7 +42,7 @@ init =
 alloc :: Point -> IndexAllocator -> AllocReply
 alloc point allocator =
     case HashMap.lookup point (hashMap allocator) of
-        Just index -> AlreadyIndexed index allocator
+        Just index -> AlreadyIndexed index
         Nothing ->
             let newHashMap = HashMap.insert point
                                             (nextIndex allocator)

@@ -94,6 +94,9 @@ testSuite =
         , testCase "Parse a complete model" completeModel
         , testCase "Split a FilePart list" splittedFileParts
         ]
+    , testGroup "Model tests - model assembly"
+        [ testCase "Assemble vertP" assembleVertP
+        ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo
         , testCase "eitherThree" eitherThree
