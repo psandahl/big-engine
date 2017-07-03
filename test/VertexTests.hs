@@ -8,6 +8,9 @@ module VertexTests
     , vertP_Tx_sizeOf
     , vertP_Tx_alignment
     , vertP_Tx_encodeDecode
+    , vertP_N_sizeOf
+    , vertP_N_alignment
+    , vertP_N_encodeDecode
     , vertP_N_Tx_sizeOf
     , vertP_N_Tx_alignment
     , vertP_N_Tx_encodeDecode
@@ -22,6 +25,7 @@ import           Test.HUnit
 
 import qualified BigE.Attribute.Vert_P        as Vert_P
 import qualified BigE.Attribute.Vert_P_C      as Vert_P_C
+import qualified BigE.Attribute.Vert_P_N      as Vert_P_N
 import qualified BigE.Attribute.Vert_P_N_Tx   as Vert_P_N_Tx
 import qualified BigE.Attribute.Vert_P_N_Tx_C as Vert_P_N_Tx_C
 import qualified BigE.Attribute.Vert_P_Tx     as Vert_P_Tx
@@ -59,6 +63,18 @@ vertP_Tx_alignment = 4 @=? alignment sampleVertP_Tx
 vertP_Tx_encodeDecode :: Assertion
 vertP_Tx_encodeDecode = do
     let vert = sampleVertP_Tx
+    vert' <- encodeDecode vert
+    vert @=? vert'
+
+vertP_N_sizeOf :: Assertion
+vertP_N_sizeOf = 24 @=? sizeOf sampleVertP_N
+
+vertP_N_alignment :: Assertion
+vertP_N_alignment = 4 @=? alignment sampleVertP_N
+
+vertP_N_encodeDecode :: Assertion
+vertP_N_encodeDecode = do
+    let vert = sampleVertP_N
     vert' <- encodeDecode vert
     vert @=? vert'
 
@@ -101,6 +117,12 @@ sampleVertP_Tx =
     Vert_P_Tx.Vertex { Vert_P_Tx.position = V3 1 2 3
                      , Vert_P_Tx.texCoord = V2 4 5
                      }
+
+sampleVertP_N :: Vert_P_N.Vertex
+sampleVertP_N =
+    Vert_P_N.Vertex { Vert_P_N.position = V3 1 2 3
+                    , Vert_P_N.normal = V3 4 5 6
+                    }
 
 sampleVertP_N_Tx :: Vert_P_N_Tx.Vertex
 sampleVertP_N_Tx =
