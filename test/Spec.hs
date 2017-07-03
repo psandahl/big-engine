@@ -99,6 +99,8 @@ testSuite =
         ]
     , testGroup "Model tests - model assembly"
         [ testCase "Assemble vertP" assembleVertP
+        , testCase "Assemble vertPN" assembleVertPN
+        , testCase "Assemble vertPNTx" assembleVertPNTx
         ]
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo

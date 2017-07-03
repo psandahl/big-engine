@@ -9,11 +9,15 @@ module ModelTests
     , completeModel
     , splittedFileParts
     , assembleVertP
+    , assembleVertPN
+    , assembleVertPNTx
     ) where
 
 import           Test.HUnit
 
 import qualified BigE.Attribute.Vert_P      as Vert_P
+import qualified BigE.Attribute.Vert_P_N    as Vert_P_N
+import qualified BigE.Attribute.Vert_P_N_Tx as Vert_P_N_Tx
 import qualified BigE.Model.Assembler       as Assembler
 import           BigE.Model.Parser          (FilePart (..), Point (..), parser,
                                              splitParts)
@@ -118,12 +122,52 @@ completeModel =
 -- | Test assembly of a simple model to vert_Ps.
 assembleVertP :: Assertion
 assembleVertP =
-    Just ([ Vert_P.Vertex { Vert_P.position = V3 1 1 0}
+    Just ([ Vert_P.Vertex { Vert_P.position = V3 1 1 0 }
           , Vert_P.Vertex { Vert_P.position = V3 (-1) 1 0 }
           , Vert_P.Vertex { Vert_P.position = V3 (-1) (-1) 0 }
           , Vert_P.Vertex { Vert_P.position = V3 1 (-1) 0 }
           ], [0, 1, 2, 0, 2, 3])
         @=? Assembler.assembleVertP squareParts
+
+-- | Test assembly of a simple model to vert_P_Ns.
+assembleVertPN :: Assertion
+assembleVertPN =
+    Just ([ Vert_P_N.Vertex { Vert_P_N.position = V3 1 1 0
+                            , Vert_P_N.normal = V3 0 0 1
+                            }
+          , Vert_P_N.Vertex { Vert_P_N.position = V3 (-1) 1 0
+                            , Vert_P_N.normal = V3 0 0 1
+                            }
+          , Vert_P_N.Vertex { Vert_P_N.position = V3 (-1) (-1) 0
+                            , Vert_P_N.normal = V3 0 0 1
+                            }
+          , Vert_P_N.Vertex { Vert_P_N.position = V3 1 (-1) 0
+                            , Vert_P_N.normal = V3 0 0 1
+                            }
+          ], [0, 1, 2, 0, 2, 3])
+        @=? Assembler.assembleVertPN squareParts
+
+-- | Test assembly of a simple model to vert_P_N_Txs.
+assembleVertPNTx :: Assertion
+assembleVertPNTx =
+    Just ([ Vert_P_N_Tx.Vertex { Vert_P_N_Tx.position = V3 1 1 0
+                               , Vert_P_N_Tx.normal = V3 0 0 1
+                               , Vert_P_N_Tx.texCoord = V2 1 1
+                               }
+          , Vert_P_N_Tx.Vertex { Vert_P_N_Tx.position = V3 (-1) 1 0
+                               , Vert_P_N_Tx.normal = V3 0 0 1
+                               , Vert_P_N_Tx.texCoord = V2 0 1
+                               }
+          , Vert_P_N_Tx.Vertex { Vert_P_N_Tx.position = V3 (-1) (-1) 0
+                               , Vert_P_N_Tx.normal = V3 0 0 1
+                               , Vert_P_N_Tx.texCoord = V2 0 0
+                               }
+          , Vert_P_N_Tx.Vertex { Vert_P_N_Tx.position = V3 1 (-1) 0
+                               , Vert_P_N_Tx.normal = V3 0 0 1
+                               , Vert_P_N_Tx.texCoord = V2 1 0
+                               }
+          ], [0, 1, 2, 0, 2, 3])
+        @=? Assembler.assembleVertPNTx squareParts
 
 -- | Dummy model. Makes no sense geometerically.
 model :: ByteString
@@ -173,10 +217,15 @@ squareParts =
     , Vertex $ V3 (-1) 1 0
     , Vertex $ V3 (-1) (-1) 0
     , Vertex $ V3 1 (-1) 0
-    , Triangle (Point 1 Nothing Nothing)
-               (Point 2 Nothing Nothing)
-               (Point 3 Nothing Nothing)
-    , Triangle (Point 1 Nothing Nothing)
-               (Point 3 Nothing Nothing)
-               (Point 4 Nothing Nothing)
+    , Normal $ V3 0 0 1
+    , TexCoord $ V2 0 0
+    , TexCoord $ V2 1 0
+    , TexCoord $ V2 0 1
+    , TexCoord $ V2 1 1
+    , Triangle (Point 1 (Just 4) (Just 1))
+               (Point 2 (Just 3) (Just 1))
+               (Point 3 (Just 1) (Just 1))
+    , Triangle (Point 1 (Just 4) (Just 1))
+               (Point 3 (Just 1) (Just 1))
+               (Point 4 (Just 2) (Just 1))
     ]
