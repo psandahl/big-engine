@@ -10,6 +10,7 @@
 module BigE.Util
     ( eitherTwo
     , eitherThree
+    , eitherFour
     , clamp
     ) where
 
@@ -35,6 +36,18 @@ eitherThree (e1, e2, e3)
     | isLeft e1 = Left (fromLeft e1)
     | isLeft e2 = Left (fromLeft e2)
     | otherwise = Left (fromLeft e3)
+
+-- | Utility for evaluating a tuple of four 'Either's. The left type must be
+-- same for all of them. In case of multiple errors only the first is
+-- reported.
+eitherFour :: (Either a b, Either a c, Either a d, Either a e) -> Either a (b, c, d, e)
+eitherFour (e1, e2, e3, e4)
+    | isRight e1 && isRight e2 && isRight e3 && isRight e4 =
+        Right (fromRight e1, fromRight e2, fromRight e3, fromRight e4)
+    | isLeft e1 = Left (fromLeft e1)
+    | isLeft e2 = Left (fromLeft e2)
+    | isLeft e3 = Left (fromLeft e3)
+    | otherwise = Left (fromLeft e4)
 
 -- | clamp min max val: clamp the value to fit the range given by min and max.
 clamp :: Ord a => a -> a -> a -> a

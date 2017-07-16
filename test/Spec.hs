@@ -105,6 +105,7 @@ testSuite =
     , testGroup "Util tests - either tuple bundling"
         [ testCase "eitherTwo" eitherTwo
         , testCase "eitherThree" eitherThree
+        , testCase "eitherFour" eitherFour
         ]
     , testGroup "Util tests - clamping"
         [ testCase "clamp" clamp
