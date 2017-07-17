@@ -32,7 +32,7 @@ import           Control.Monad.IO.Class (MonadIO, liftIO)
 import           Foreign                (castPtr, with)
 import           Graphics.GL            (GLenum, GLfloat, GLint, GLuint)
 import qualified Graphics.GL            as GL
-import           Linear                 (M44, V2, V3)
+import           Linear                 (M44, V2, V3, V4)
 
 class ToGLenum a where
     toGLenum :: a -> GLenum
@@ -155,6 +155,11 @@ instance Uniform (V2 GLfloat) where
 instance Uniform (V3 GLfloat) where
     setUniform (Location loc) value = liftIO $
         with value $ GL.glUniform3fv loc 1 . castPtr
+
+-- | Uniform instance for V4 GLfloat.
+instance Uniform (V4 GLfloat) where
+    setUniform (Location loc) value = liftIO $
+        with value $ GL.glUniform4fv loc 1 . castPtr
 
 -- | Uniform instance for M44 GLfloat.
 instance Uniform (M44 GLfloat) where
